@@ -6,6 +6,7 @@ import { CldImage } from 'next-cloudinary';
 import { Photo, PhotoCategory } from '@/content/types';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { cloudinaryCloudName } from '@/lib/cloudinary';
 
 interface PhotoPickerProps {
     photosGrouped: Record<PhotoCategory, Photo[]>;
@@ -39,7 +40,7 @@ export default function PhotoPicker({ photosGrouped, onPhotoSelect }: PhotoPicke
                                     whileTap={{ scale: 0.98 }}
                                     className="group relative aspect-square bg-gray-100 rounded-sm overflow-hidden focus-visible:ring-2 focus-visible:ring-black outline-none"
                                 >
-                                    {photo.cloudinaryId ? (
+                                    {photo.cloudinaryId && cloudinaryCloudName ? (
                                         <CldImage
                                             src={photo.cloudinaryId}
                                             alt={photo.alt}

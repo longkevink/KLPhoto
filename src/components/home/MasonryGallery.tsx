@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { Photo } from '@/content/types';
 import { cn } from '@/lib/utils';
 import { imageReveal, staggerContainer } from '@/lib/motion';
+import { cloudinaryCloudName } from '@/lib/cloudinary';
 
 interface MasonryGalleryProps {
     photos: Photo[];
@@ -30,7 +31,7 @@ export default function MasonryGallery({ photos, className }: MasonryGalleryProp
                     <div className="relative w-full overflow-hidden bg-gray-100">
                         {/* Aspect Ratio hack for preventing layout shift if size is known */}
                         <div style={{ aspectRatio: `${photo.width} / ${photo.height}` }}>
-                            {photo.cloudinaryId ? (
+                            {photo.cloudinaryId && cloudinaryCloudName ? (
                                 <CldImage
                                     src={photo.cloudinaryId}
                                     alt={photo.alt}

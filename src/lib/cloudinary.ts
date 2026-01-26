@@ -17,7 +17,9 @@ export function getCloudinaryUrl(publicId: string, options?: {
 }): string {
     const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
     if (!cloudName) {
-        throw new Error('NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME is not configured');
+        // Log warning but don't throw during build to prevent crash
+        console.warn('NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME is not configured. Falling back to placeholder.');
+        return `https://via.placeholder.com/${options?.width || 800}x${options?.height || 600}?text=Cloudinary+Config+Missing`;
     }
 
     const transformations: string[] = [];

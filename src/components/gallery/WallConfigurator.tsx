@@ -7,6 +7,7 @@ import { Photo, GalleryEnvironment, LayoutTemplate, FrameStyle, MatOption } from
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Trash2, X } from 'lucide-react';
+import { cloudinaryCloudName } from '@/lib/cloudinary';
 
 interface WallConfiguratorProps {
     environment: GalleryEnvironment;
@@ -95,7 +96,7 @@ export default function WallConfigurator({
                             {photo ? (
                                 <div className={cn("w-full h-full transition-all duration-500 bg-white", getFrameClasses(frameStyle))}>
                                     <div className={cn("w-full h-full overflow-hidden relative", getMatClasses(matOption))}>
-                                        {photo.cloudinaryId ? (
+                                        {photo.cloudinaryId && cloudinaryCloudName ? (
                                             <CldImage
                                                 src={photo.cloudinaryId}
                                                 alt={photo.alt}
