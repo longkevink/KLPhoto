@@ -2,7 +2,7 @@
 
 import { useDraggable } from '@dnd-kit/core'; // Could use dnd-kit or just native/simple logic
 import Image from 'next/image';
-import { CldImage } from 'next-cloudinary';
+import CldImage from '@/components/ui/CldImage';
 import { Photo, PhotoCategory } from '@/content/types';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';

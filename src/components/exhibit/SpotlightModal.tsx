@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { CldImage } from 'next-cloudinary';
+import CldImage from '@/components/ui/CldImage';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { Photo } from '@/content/types';

@@ -2,7 +2,7 @@
 
 import { useRef } from 'react';
 import Image from 'next/image';
-import { CldImage } from 'next-cloudinary';
+import CldImage from '@/components/ui/CldImage';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Photo } from '@/content/types';
 import { cn } from '@/lib/utils';
