@@ -7,6 +7,7 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { Photo } from '@/content/types';
 import { cn } from '@/lib/utils';
 import { fadeIn } from '@/lib/motion';
+import { cloudinaryCloudName } from '@/lib/cloudinary';
 
 interface FilmStripProps {
     photos: Photo[];
@@ -59,7 +60,7 @@ export default function FilmStrip({ photos, onPhotoClick, className, isActive }:
                     >
                         <div className="bg-white p-2 md:p-6 shadow-sm group-hover:shadow-lg transition-shadow duration-300">
                             <div className="relative bg-gray-100 overflow-hidden" style={{ aspectRatio: `${photo.width} / ${photo.height}` }}>
-                                {photo.cloudinaryId ? (
+                                {photo.cloudinaryId && cloudinaryCloudName ? (
                                     <CldImage
                                         src={photo.cloudinaryId}
                                         alt={photo.alt}

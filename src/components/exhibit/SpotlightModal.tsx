@@ -8,6 +8,7 @@ import { X } from 'lucide-react';
 import { Photo } from '@/content/types';
 import { isAdminMode } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
+import { cloudinaryCloudName } from '@/lib/cloudinary';
 
 interface SpotlightModalProps {
     photo: Photo | null;
@@ -123,7 +124,7 @@ export default function SpotlightModal({ photo, isOpen, onClose }: SpotlightModa
                             }}
                             variants={imageVariants}
                         >
-                            {photo.cloudinaryId ? (
+                            {photo.cloudinaryId && cloudinaryCloudName ? (
                                 <CldImage
                                     src={photo.cloudinaryId}
                                     alt={photo.alt}
