@@ -2,15 +2,50 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import CldImage from '@/components/ui/CldImage';
 import { Photo, PhotoCategory, GalleryEnvironment, LayoutTemplate, FrameStyle, MatOption } from '@/content/types';
 import PhotoPicker from './PhotoPicker';
 import WallConfigurator from './WallConfigurator';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
+import { Maximize2, RotateCcw, Layout, Monitor, Home, Building2, Briefcase, Square, Grid3X3, Grid2X2 } from 'lucide-react';
 
 interface GalleryClientProps {
     photosGrouped: Record<PhotoCategory, Photo[]>;
 }
+
+// --- Wall Position Framework ---
+// Defines precise positioning for the wall art grid in each environment 3D space.
+interface WallTransform {
+    x: number;
+    y: number;
+    scale: number;
+}
+
+const DEFAULT_TRANSFORMS: Record<GalleryEnvironment, Record<LayoutTemplate, WallTransform>> = {
+    home: {
+        'single': { x: 0, y: 0, scale: 1 },
+        'gallery-6': { x: 0, y: 0, scale: 1 },
+        'collage-5': { x: 0, y: 0, scale: 1 },
+        'collage-7': { x: 0, y: 0, scale: 1 },
+        'collage-9': { x: 0, y: 0, scale: 1 },
+    },
+    office: {
+        // "Shifted further left to land on the blank white wall space (left 3/4 of screen)"
+        'single': { x: -280, y: -10, scale: 0.85 },
+        'gallery-6': { x: -350, y: -30, scale: 0.75 },
+        'collage-5': { x: -320, y: -20, scale: 0.8 },
+        'collage-7': { x: -320, y: -20, scale: 0.75 },
+        'collage-9': { x: -320, y: -30, scale: 0.7 },
+    },
+    business: {
+        'single': { x: 0, y: 0, scale: 1 },
+        'gallery-6': { x: 0, y: 0, scale: 1 },
+        'collage-5': { x: 0, y: 0, scale: 1 },
+        'collage-7': { x: 0, y: 0, scale: 1 },
+        'collage-9': { x: 0, y: 0, scale: 1 },
+    }
+};
 
 export default function GalleryClient({ photosGrouped }: GalleryClientProps) {
     // State
@@ -19,6 +54,9 @@ export default function GalleryClient({ photosGrouped }: GalleryClientProps) {
     const [frameStyle, setFrameStyle] = useState<FrameStyle>('thin-black');
     const [matOption, setMatOption] = useState<MatOption>('white');
     const [activeSlotIndex, setActiveSlotIndex] = useState(0);
+
+    // Wall Position State (The "Control Field")
+    const [transforms, setTransforms] = useState(DEFAULT_TRANSFORMS);
 
     // Layout Slot Logic
     const getSlotCount = (l: LayoutTemplate) => {
@@ -53,7 +91,8 @@ export default function GalleryClient({ photosGrouped }: GalleryClientProps) {
         if (nextEmpty !== -1) {
             setActiveSlotIndex(nextEmpty);
         } else {
-            setActiveSlotIndex((prev) => (prev + 1) % currentSlotCount);
+            // Optional: loop back or just stay. Let's stay to allow editing.
+            // setActiveSlotIndex((prev) => (prev + 1) % currentSlotCount);
         }
     };
 
@@ -62,165 +101,195 @@ export default function GalleryClient({ photosGrouped }: GalleryClientProps) {
         setActiveSlotIndex(0);
     };
 
-    const environments: GalleryEnvironment[] = ['home', 'office', 'business'];
-    const layouts: LayoutTemplate[] = ['single', 'gallery-6', 'collage-5', 'collage-7', 'collage-9'];
-    const frames: FrameStyle[] = ['thin-black', 'thin-white', 'natural-wood'];
-    const mats: MatOption[] = ['none', 'white'];
+    const environments: { id: GalleryEnvironment; icon: any; label: string }[] = [
+        { id: 'home', icon: Home, label: 'Home' },
+        { id: 'office', icon: Building2, label: 'Office' },
+        { id: 'business', icon: Briefcase, label: 'Business' }, // Renamed from Gallery
+    ];
+
+    const layouts: { id: LayoutTemplate; icon: any; label: string }[] = [
+        { id: 'single', icon: Square, label: 'Single' },
+        { id: 'gallery-6', icon: Grid3X3, label: 'Grid' },
+        { id: 'collage-5', icon: Layout, label: 'Collage' },
+    ];
+
+    // Get current transform for active env/layout
+    const activeTransform = transforms[environment][layout];
 
     return (
-        <div className="flex h-[calc(100vh-64px)] pt-[64px] bg-white overflow-hidden">
-            {/* Left Rail */}
+        <div className="flex h-[calc(100vh-64px)] pt-[64px] bg-neutral-900 overflow-hidden font-sans">
+            {/* Left Rail - Dark Themed */}
             <PhotoPicker photosGrouped={photosGrouped} onPhotoSelect={handlePhotoSelect} />
 
             {/* Main Canvas Area */}
-            <div className="flex-1 flex flex-col relative z-0">
-                {/* Toolbar */}
-                <div className="border-b border-gray-200 bg-white p-4 flex items-center justify-between shadow-sm z-20">
-                    <div className="flex items-center gap-6">
-                        {/* Env Selector */}
-                        <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Env</span>
-                            <div className="flex bg-gray-100 rounded-lg p-1">
-                                {environments.map(env => (
-                                    <button
-                                        key={env}
-                                        onClick={() => setEnvironment(env)}
-                                        className={cn(
-                                            "px-3 py-1 text-xs capitalize rounded-md transition-all",
-                                            environment === env ? "bg-white shadow-sm font-medium text-black" : "text-gray-500 hover:text-gray-800"
-                                        )}
-                                    >
-                                        {env}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
+            <div className="flex-1 relative z-0 bg-neutral-900">
 
-                        <div className="w-px h-6 bg-gray-200" />
+                {/* Floating Top Toolbar */}
+                <div className="absolute top-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-4 bg-white/80 backdrop-blur-xl border border-white/20 p-2 rounded-full shadow-2xl transition-all duration-300 hover:bg-white/90">
 
-                        {/* Layout Selector */}
-                        <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Layout</span>
-                            <div className="flex bg-gray-100 rounded-lg p-1">
-                                {layouts.map(l => (
-                                    <button
-                                        key={l}
-                                        onClick={() => handleLayoutChange(l)}
-                                        className={cn(
-                                            "px-3 py-1 text-xs capitalize rounded-md transition-all",
-                                            layout === l ? "bg-white shadow-sm font-medium text-black" : "text-gray-500 hover:text-gray-800"
-                                        )}
-                                    >
-                                        {l === 'single' ? 'Single' : l.replace('gallery-', 'Grid ').replace('collage-', 'Collage ')}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
+                    {/* Env Selector */}
+                    <div className="flex bg-neutral-100/50 rounded-full p-1">
+                        {environments.map(({ id, icon: Icon, label }) => (
+                            <button
+                                key={id}
+                                onClick={() => setEnvironment(id)}
+                                className={cn(
+                                    "flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-full transition-all duration-300",
+                                    environment === id
+                                        ? "bg-white text-black shadow-sm scale-105"
+                                        : "text-neutral-500 hover:text-black hover:bg-white/50"
+                                )}
+                                title={label}
+                            >
+                                <Icon size={14} />
+                                <span className="hidden sm:inline">{label}</span>
+                            </button>
+                        ))}
                     </div>
 
-                    <Button variant="ghost" size="sm" onClick={handleClearLayout}>
-                        Clear Layout
+                    <div className="w-px h-6 bg-neutral-200" />
+
+                    {/* Layout Selector */}
+                    <div className="flex bg-neutral-100/50 rounded-full p-1">
+                        {layouts.map(({ id, icon: Icon, label }) => (
+                            <button
+                                key={id}
+                                onClick={() => handleLayoutChange(id)}
+                                className={cn(
+                                    "flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-full transition-all duration-300",
+                                    layout === id
+                                        ? "bg-white text-black shadow-sm scale-105"
+                                        : "text-neutral-500 hover:text-black hover:bg-white/50"
+                                )}
+                                title={label}
+                            >
+                                <Icon size={14} />
+                                <span className="hidden sm:inline">{label}</span>
+                            </button>
+                        ))}
+                    </div>
+
+                    <div className="w-px h-6 bg-neutral-200" />
+
+                    <Button variant="ghost" size="icon" onClick={handleClearLayout} className="rounded-full w-8 h-8 hover:bg-red-50 hover:text-red-500 text-neutral-400" title="Clear All">
+                        <RotateCcw size={14} />
                     </Button>
                 </div>
 
-                {/* Visualizer */}
-                <WallConfigurator
-                    environment={environment}
-                    layout={layout}
-                    frameStyle={frameStyle}
-                    matOption={matOption}
-                    slots={visibleSlots}
-                    activeSlotIndex={activeSlotIndex}
-                    onSlotClick={setActiveSlotIndex}
-                    onClearSlot={(idx) => {
-                        const newSlots = [...slots];
-                        newSlots[idx] = null;
-                        setSlots(newSlots);
-                    }}
-                />
+                {/* Visualizer - Fills container */}
+                <div className="absolute inset-0 z-0">
+                    <WallConfigurator
+                        environment={environment}
+                        layout={layout}
+                        frameStyle={frameStyle}
+                        matOption={matOption}
+                        slots={visibleSlots}
+                        activeSlotIndex={activeSlotIndex}
+                        onSlotClick={setActiveSlotIndex}
+                        onClearSlot={(idx) => {
+                            const newSlots = [...slots];
+                            newSlots[idx] = null;
+                            setSlots(newSlots);
+                        }}
+                        transform={activeTransform}
+                    />
+                </div>
 
-                {/* Frame Toolbar (Bottom) */}
-                <div className="border-t border-gray-200 bg-white p-4 flex items-center justify-center gap-8 z-20">
-                    <div className="flex items-center gap-3">
-                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Frame</span>
-                        <div className="flex gap-2">
-                            {frames.map(f => (
-                                <button
-                                    key={f}
-                                    onClick={() => setFrameStyle(f)}
-                                    className={cn(
-                                        "w-8 h-8 rounded-full border-2 transition-transform hover:scale-110",
-                                        frameStyle === f ? "ring-2 ring-blue-500 ring-offset-2" : "border-gray-200",
-                                        f === 'thin-black' && "bg-black border-gray-800",
-                                        f === 'thin-white' && "bg-white border-gray-300",
-                                        f === 'natural-wood' && "bg-[#8B5E3C] border-[#6D4C33]"
-                                    )}
-                                    aria-label={f}
-                                />
-                            ))}
+                {/* Floating Bottom Toolbar (Frames) */}
+                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex items-center gap-8 bg-white/80 backdrop-blur-xl border border-white/20 px-8 py-3 rounded-full shadow-2xl transition-all duration-300 hover:bg-white/90">
+                    <div className="flex items-center gap-4">
+                        <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Frame</span>
+                        <div className="flex items-center gap-3">
+                            <button onClick={() => setFrameStyle('thin-black')} className={cn("w-6 h-6 rounded-full bg-black border border-neutral-200 ring-offset-2 transition-all", frameStyle === 'thin-black' && "ring-2 ring-black scale-110")} title="Black" />
+                            <button onClick={() => setFrameStyle('thin-white')} className={cn("w-6 h-6 rounded-full bg-white border border-neutral-200 ring-offset-2 transition-all", frameStyle === 'thin-white' && "ring-2 ring-neutral-300 scale-110")} title="White" />
+                            <button onClick={() => setFrameStyle('natural-wood')} className={cn("w-6 h-6 rounded-full bg-[#8B5E3C] border border-neutral-200 ring-offset-2 transition-all", frameStyle === 'natural-wood' && "ring-2 ring-[#8B5E3C] scale-110")} title="Wood" />
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Mat</span>
-                        <div className="flex bg-gray-100 rounded-lg p-1">
-                            {mats.map(m => (
-                                <button
-                                    key={m}
-                                    onClick={() => setMatOption(m)}
-                                    className={cn(
-                                        "px-3 py-1 text-xs capitalize rounded-md transition-all",
-                                        matOption === m ? "bg-white shadow-sm font-medium text-black" : "text-gray-500 hover:text-gray-800"
-                                    )}
-                                >
-                                    {m}
-                                </button>
-                            ))}
+                    <div className="w-px h-6 bg-neutral-200" />
+
+                    <div className="flex items-center gap-4">
+                        <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Mat</span>
+                        <div className="flex bg-neutral-100/50 rounded-full p-0.5">
+                            <button onClick={() => setMatOption('none')} className={cn("px-3 py-1 text-[10px] uppercase font-bold rounded-full transition-all", matOption === 'none' ? "bg-white shadow-sm text-black" : "text-neutral-400 hover:text-black")} >None</button>
+                            <button onClick={() => setMatOption('white')} className={cn("px-3 py-1 text-[10px] uppercase font-bold rounded-full transition-all", matOption === 'white' ? "bg-white shadow-sm text-black" : "text-neutral-400 hover:text-black")} >White</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Right Detail Panel */}
-            <aside className="w-72 bg-white border-l border-gray-200 p-6 flex flex-col z-20 shadow-[-4px_0_15px_-3px_rgba(0,0,0,0.05)]">
-                <div className="mb-6">
-                    <h2 className="font-serif text-2xl tracking-tight">Active Print</h2>
-                    <div className="h-1 w-12 bg-[#F1641E] mt-2" />
-                </div>
-
+            {/* Right Detail Panel - Floating Card Style or Standard Sidebar? 
+                Let's keep it standard for now but cleaner. 
+            */}
+            <aside className="w-80 bg-white border-l border-neutral-100 p-0 flex flex-col z-20 shadow-[-10px_0_30px_-10px_rgba(0,0,0,0.05)]">
                 {selectedPhoto ? (
-                    <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-right-4 duration-500">
-                        <div className="relative aspect-[4/3] w-full bg-gray-100 shadow-sm border border-gray-200">
-                            <Image
-                                src={selectedPhoto.src}
-                                alt={selectedPhoto.alt}
-                                fill
-                                className="object-cover"
-                            />
+                    <div className="flex flex-col h-full animate-in slide-in-from-right-4 duration-500">
+                        <div className={cn(
+                            "relative w-full bg-neutral-100 overflow-hidden",
+                            selectedPhoto.orientation === 'landscape' ? "aspect-[3/2]" : "aspect-[2/3]"
+                        )}>
+                            {selectedPhoto.cloudinaryId ? (
+                                <CldImage
+                                    src={selectedPhoto.cloudinaryId}
+                                    alt={selectedPhoto.alt}
+                                    fill
+                                    className="object-cover"
+                                />
+                            ) : (
+                                <Image
+                                    src={selectedPhoto.src}
+                                    alt={selectedPhoto.alt}
+                                    fill
+                                    className="object-cover"
+                                />
+                            )}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 hover:opacity-100 transition-opacity flex items-end p-4">
+                                <span className="text-white text-xs font-medium tracking-wide">Preview</span>
+                            </div>
                         </div>
 
-                        <div>
-                            <h3 className="font-serif text-xl">{selectedPhoto.title}</h3>
-                            <p className="text-xs text-gray-500 uppercase tracking-widest mt-1">
-                                {selectedPhoto.category} {selectedPhoto.series && `— ${selectedPhoto.series}`}
-                            </p>
-                        </div>
+                        <div className="p-8 flex-1 flex flex-col">
+                            <div className="mb-6">
+                                <h3 className="font-serif text-2xl text-neutral-900 leading-tight">{selectedPhoto.title}</h3>
+                                <div className="flex items-center gap-2 mt-2">
+                                    <span className="px-2 py-0.5 bg-neutral-100 text-neutral-500 text-[10px] font-bold uppercase tracking-widest rounded-sm">
+                                        {selectedPhoto.category}
+                                    </span>
+                                    {selectedPhoto.series && (
+                                        <span className="text-neutral-400 text-xs">— {selectedPhoto.series}</span>
+                                    )}
+                                </div>
+                            </div>
 
-                        <div className="mt-auto">
-                            <p className="text-sm text-gray-600 mb-4 leading-relaxed">
-                                Museum-quality archival print. Available in multiple sizes on the Etsy shop.
+                            <p className="text-sm text-neutral-500 leading-relaxed mb-8 flex-1">
+                                High-resolution archival pigment print on Hahnemühle Photo Rag 308gsm.
+                                Museum quality, designed to last a lifetime without fading.
                             </p>
-                            <Button
-                                className="w-full bg-[#F1641E] hover:bg-[#D45719] text-white border-transparent h-12 text-base shadow-md hover:shadow-lg transform transition-all hover:-translate-y-0.5"
-                                onClick={() => window.open(selectedPhoto.etsyUrl, '_blank')}
-                            >
-                                Buy print on Etsy
-                            </Button>
+
+                            <div className="space-y-3">
+                                <Button
+                                    className="w-full bg-[#F1641E] hover:bg-[#d95616] text-white rounded-full h-12 text-sm font-bold tracking-wide shadow-lg hover:shadow-orange-500/30 transition-all transform hover:-translate-y-0.5"
+                                    onClick={() => window.open(selectedPhoto.etsyUrl, '_blank')}
+                                >
+                                    Purchase Print
+                                </Button>
+                                <p className="text-center text-[10px] text-neutral-400 uppercase tracking-widest">
+                                    Secure checkout via Etsy
+                                </p>
+                            </div>
                         </div>
                     </div>
                 ) : (
-                    <div className="flex-1 flex flex-col items-center justify-center text-center text-gray-400">
-                        <p className="mb-4">Select a slot on the wall to see details</p>
+                    <div className="flex-1 flex flex-col items-center justify-center text-center p-8 space-y-4">
+                        <div className="w-16 h-16 rounded-full bg-neutral-50 flex items-center justify-center text-neutral-300">
+                            <Maximize2 size={24} />
+                        </div>
+                        <div>
+                            <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-widest">No Selection</h3>
+                            <p className="text-sm text-neutral-500 mt-2 max-w-[200px] mx-auto">
+                                Select a photo from the wall to view details and purchasing options.
+                            </p>
+                        </div>
                     </div>
                 )}
             </aside>
