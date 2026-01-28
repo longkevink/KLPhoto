@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { Photo, PhotoCategory } from '@/content/types';
 import FilmStrip from './FilmStrip';
 import SpotlightModal from './SpotlightModal';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+
 
 interface ExhibitClientProps {
     photosByCategory: Record<PhotoCategory, Photo[]>;
@@ -14,8 +15,8 @@ interface ExhibitClientProps {
 }
 
 export default function ExhibitClient({ photosByCategory, initialSpotlightPhoto }: ExhibitClientProps) {
-    const router = useRouter();
     const searchParams = useSearchParams();
+
     const categories: PhotoCategory[] = ['street', 'travel'];
 
     const [activeCategory, setActiveCategory] = useState<PhotoCategory>('street');
@@ -25,14 +26,18 @@ export default function ExhibitClient({ photosByCategory, initialSpotlightPhoto 
     // Sync state with URL params if they change externally (e.g. back button)
     useEffect(() => {
         const photoId = searchParams.get('photo');
+
+        // If the URL has no photo ID but the modal is open, it means the user hit 'back'
         if (!photoId && isModalOpen) {
-            setIsModalOpen(false);
-            // Wait for animation to finish before clearing data? 
-            // Actually closer to instant creates less ghosting, but we can delay slightly in a real app.
-            // For now, instant sync.
-            setTimeout(() => setSpotlightPhoto(null), 300);
+            // Using setTimeout to avoid synchronous setState inside useEffect warning
+            const timer = setTimeout(() => {
+                setIsModalOpen(false);
+                setTimeout(() => setSpotlightPhoto(null), 300);
+            }, 0);
+            return () => clearTimeout(timer);
         }
     }, [searchParams, isModalOpen]);
+
 
     const handlePhotoClick = (photo: Photo) => {
         setSpotlightPhoto(photo);

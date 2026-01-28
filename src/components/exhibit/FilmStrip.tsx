@@ -3,7 +3,8 @@
 import { useRef } from 'react';
 import Image from 'next/image';
 import CldImage from '@/components/ui/CldImage';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
+
 import { Photo } from '@/content/types';
 import { cn } from '@/lib/utils';
 import { fadeIn } from '@/lib/motion';
@@ -20,11 +21,10 @@ export default function FilmStrip({ photos, onPhotoClick, className, isActive }:
     const containerRef = useRef<HTMLDivElement>(null);
 
     // Simple drag scroll handler
-    const handleDrag = (e: React.MouseEvent) => {
-        // Implementation note: a robust drag-to-scroll often requires more state
-        // For v1, relying on native overflow-x-auto with touch/trackpad support + buttons
-        // is safer than a complex JS drag implementation that might conflict with scroll-snap
-    };
+    // Implementation note: a robust drag-to-scroll often requires more state
+    // For v1, relying on native overflow-x-auto with touch/trackpad support + buttons
+    // is safer than a complex JS drag implementation that might conflict with scroll-snap
+
 
     if (!isActive) return null;
 

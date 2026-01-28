@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React from 'react';
 import Image from 'next/image';
 import CldImage from '@/components/ui/CldImage';
 import { Photo, GalleryEnvironment, LayoutTemplate, FrameStyle, MatOption } from '@/content/types';
@@ -8,6 +8,8 @@ import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus } from 'lucide-react';
 import { cloudinaryCloudName } from '@/lib/cloudinary';
+
+
 
 interface WallConfiguratorProps {
     environment: GalleryEnvironment;
@@ -32,6 +34,7 @@ export default function WallConfigurator({
     onClearSlot,
     transform = { x: 0, y: 0, scale: 1 }
 }: WallConfiguratorProps) {
+
 
     // --- Frame & Mat Logic ---
 
@@ -170,18 +173,18 @@ export default function WallConfigurator({
 
                                 // --- Dynamic Frame Sizing Logic ---
 
-                                let frameStyle: any = {};
+                                let calculatedSlotStyle: React.CSSProperties = {};
 
                                 if (isSingle && photo) {
                                     // Single view: Fixed height constraint, allow width to flow
-                                    frameStyle = {
+                                    calculatedSlotStyle = {
                                         aspectRatio: `${photo.width} / ${photo.height}`,
                                         height: '70vh',
                                         width: 'auto'
                                     };
                                 } else if (isSingle && !photo) {
                                     // Empty Single view
-                                    frameStyle = { aspectRatio: '3/2', height: '60vh' };
+                                    calculatedSlotStyle = { aspectRatio: '3/2', height: '60vh' };
                                 } else if (photo) {
                                     // Grid/Collage view with Photo
                                     // We MUST anchor one dimension so aspect-ratio has something to work with.
@@ -192,14 +195,14 @@ export default function WallConfigurator({
 
                                     if (isLandscape) {
                                         // Anchor to the column width
-                                        frameStyle = {
+                                        calculatedSlotStyle = {
                                             aspectRatio: `${photo.width} / ${photo.height}`,
                                             width: '100%',
                                             height: 'auto'
                                         };
                                     } else {
                                         // Anchor to a fixed height to prevent super-tall elements
-                                        frameStyle = {
+                                        calculatedSlotStyle = {
                                             aspectRatio: `${photo.width} / ${photo.height}`,
                                             height: maxPortraitHeight,
                                             width: 'auto',
@@ -210,12 +213,13 @@ export default function WallConfigurator({
 
                                 } else {
                                     // Empty Grid slot
-                                    frameStyle = {
+                                    calculatedSlotStyle = {
                                         aspectRatio: '1',
                                         width: '100%',
                                         height: 'auto'
                                     };
                                 }
+
 
                                 return (
                                     <motion.div
@@ -232,19 +236,20 @@ export default function WallConfigurator({
                                         <div
                                             className={cn(
                                                 "relative transition-all duration-500",
-                                                activeSlotIndex === index && !photo ? "ring-2 ring-[#F1641E] ring-offset-4 ring-offset-transparent" : "",
+                                                activeSlotIndex === index && !photo ? "ring-2 ring-white/50 ring-offset-4 ring-offset-transparent" : "",
                                                 activeSlotIndex === index && photo ? "scale-[1.02] z-20" : "hover:scale-[1.02] hover:z-10",
-                                                !photo && "bg-white/10 backdrop-blur-sm border-2 border-dashed border-white/30 rounded-sm hover:bg-white/20 transition-colors w-full"
+                                                !photo && "bg-white/5 backdrop-blur-[2px] border border-white/10 rounded-sm hover:bg-white/10 transition-all duration-500 w-full"
                                             )}
-                                            style={frameStyle}
+                                            style={calculatedSlotStyle}
                                         >
+
                                             {photo ? (
                                                 <div
                                                     className="w-full h-full relative"
                                                     style={getFrameStyles(frameStyle)} // Applying frame border here
                                                 >
-                                                    <div className={cn("w-full h-full relative overflow-hidden bg-white", matClasses)}>
-                                                        <div className="relative w-full h-full shadow-[inset_0_0_15px_rgba(0,0,0,0.15)]">
+                                                    <div className={cn("w-full h-full relative overflow-hidden bg-neutral-50", matClasses)}>
+                                                        <div className="relative w-full h-full shadow-[inset_1px_1px_15px_rgba(0,0,0,0.15)]">
                                                             {photo.cloudinaryId && cloudinaryCloudName ? (
                                                                 <CldImage
                                                                     src={photo.cloudinaryId}
@@ -266,21 +271,24 @@ export default function WallConfigurator({
                                                     </div>
 
                                                     {/* Reflection Overlay (Glass) */}
-                                                    <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/10 pointer-events-none mix-blend-overlay" />
+                                                    <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/10 to-white/20 pointer-events-none mix-blend-soft-light opacity-60" />
+                                                    <div className="absolute inset-0 bg-gradient-to-bl from-transparent via-transparent to-black/10 pointer-events-none" />
 
                                                     {/* Remove Button */}
                                                     <button
                                                         onClick={(e) => { e.stopPropagation(); onClearSlot(index); }}
-                                                        className="absolute -top-3 -right-3 bg-red-500 text-white p-1.5 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 z-50 hover:bg-red-600"
+                                                        className="absolute -top-3 -right-3 bg-neutral-900/80 backdrop-blur-md text-white p-1.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 z-50 hover:bg-red-500"
                                                     >
                                                         <X size={14} />
                                                     </button>
                                                 </div>
                                             ) : (
-                                                <div className="w-full h-full flex flex-col items-center justify-center text-white/50 gap-2">
-                                                    <Plus size={isSingle ? 48 : 24} className="opacity-70" />
-                                                    <span className="text-xs font-medium uppercase tracking-widest opacity-70">
-                                                        {isSingle ? 'Select a photo' : 'Add Photo'}
+                                                <div className="w-full h-full flex flex-col items-center justify-center text-white/20 gap-3">
+                                                    <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center bg-white/5">
+                                                        <Plus size={isSingle ? 32 : 18} className="opacity-50" />
+                                                    </div>
+                                                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-40">
+                                                        {isSingle ? 'Add Work' : 'Empty'}
                                                     </span>
                                                 </div>
                                             )}

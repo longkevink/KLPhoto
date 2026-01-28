@@ -8,7 +8,8 @@ import PhotoPicker from './PhotoPicker';
 import WallConfigurator from './WallConfigurator';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
-import { Maximize2, RotateCcw, Layout, Monitor, Home, Building2, Briefcase, Square, Grid3X3, Grid2X2 } from 'lucide-react';
+import { Maximize2, RotateCcw, Layout, Home, Building2, Briefcase, Square, Grid3X3 } from 'lucide-react';
+
 
 interface GalleryClientProps {
     photosGrouped: Record<PhotoCategory, Photo[]>;
@@ -31,12 +32,12 @@ const DEFAULT_TRANSFORMS: Record<GalleryEnvironment, Record<LayoutTemplate, Wall
         'collage-9': { x: 0, y: 0, scale: 1 },
     },
     office: {
-        // "Shifted further left to land on the blank white wall space (left 3/4 of screen)"
-        'single': { x: -280, y: -10, scale: 0.85 },
-        'gallery-6': { x: -350, y: -30, scale: 0.75 },
-        'collage-5': { x: -320, y: -20, scale: 0.8 },
-        'collage-7': { x: -320, y: -20, scale: 0.75 },
-        'collage-9': { x: -320, y: -30, scale: 0.7 },
+        // "Shifted left to land on the blank white wall space, but kept within screen bounds"
+        'single': { x: -280, y: -20, scale: 0.65 },
+        'gallery-6': { x: -280, y: -30, scale: 0.80 },
+        'collage-5': { x: -260, y: -20, scale: 0.75 },
+        'collage-7': { x: -260, y: -20, scale: 0.75 },
+        'collage-9': { x: -260, y: -30, scale: 0.7 },
     },
     business: {
         'single': { x: 0, y: 0, scale: 1 },
@@ -56,7 +57,8 @@ export default function GalleryClient({ photosGrouped }: GalleryClientProps) {
     const [activeSlotIndex, setActiveSlotIndex] = useState(0);
 
     // Wall Position State (The "Control Field")
-    const [transforms, setTransforms] = useState(DEFAULT_TRANSFORMS);
+    const [transforms] = useState(DEFAULT_TRANSFORMS);
+
 
     // Layout Slot Logic
     const getSlotCount = (l: LayoutTemplate) => {
@@ -101,17 +103,19 @@ export default function GalleryClient({ photosGrouped }: GalleryClientProps) {
         setActiveSlotIndex(0);
     };
 
-    const environments: { id: GalleryEnvironment; icon: any; label: string }[] = [
+    const environments: { id: GalleryEnvironment; icon: React.ElementType; label: string }[] = [
         { id: 'home', icon: Home, label: 'Home' },
         { id: 'office', icon: Building2, label: 'Office' },
         { id: 'business', icon: Briefcase, label: 'Business' }, // Renamed from Gallery
     ];
 
-    const layouts: { id: LayoutTemplate; icon: any; label: string }[] = [
+
+    const layouts: { id: LayoutTemplate; icon: React.ElementType; label: string }[] = [
         { id: 'single', icon: Square, label: 'Single' },
         { id: 'gallery-6', icon: Grid3X3, label: 'Grid' },
         { id: 'collage-5', icon: Layout, label: 'Collage' },
     ];
+
 
     // Get current transform for active env/layout
     const activeTransform = transforms[environment][layout];
