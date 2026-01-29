@@ -18,7 +18,7 @@ export default function LinksPage() {
             id: 'instagram',
             title: 'Instagram',
             description: 'Follow me for daily updates',
-            url: 'https://instagram.com/kevinlong', // Dummy link
+            url: 'https://instagram.com/ke_long',
             icon: Instagram,
             color: 'bg-gradient-to-tr from-[#FFDC80] via-[#FD1D1D] to-[#833AB4] text-white hover:opacity-90',
         },

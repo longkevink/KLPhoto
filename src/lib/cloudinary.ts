@@ -24,8 +24,25 @@ export function getCloudinaryUrl(publicId: string, options?: {
 
     const transformations: string[] = [];
 
-    if (options?.width) transformations.push(`w_${options.width}`);
-    if (options?.height) transformations.push(`h_${options.height}`);
+    // ENFORCING DIMENSION CAP
+    // Very large original images (8k+) cause Next.js image optimizer to fail with 400 Bad Request
+    // if requested at full size. We cap at 2000px to let Cloudinary do the initial downscaling.
+    const MAX_DIMENSION = 2000;
+
+    let w = options?.width;
+    let h = options?.height;
+
+    if (w && w > MAX_DIMENSION) w = MAX_DIMENSION;
+    if (h && h > MAX_DIMENSION) h = MAX_DIMENSION;
+
+    if (w) transformations.push(`w_${w}`);
+    if (h) transformations.push(`h_${h}`);
+
+    // If we applied any dimension constraints, use 'limit' crop to preserve aspect ratio
+    if (w || h) {
+        transformations.push('c_limit');
+    }
+
     if (options?.quality) transformations.push(`q_${options.quality}`);
     if (options?.format) transformations.push(`f_${options.format}`);
 

@@ -63,9 +63,6 @@ export default function ExhibitClient({ photosByCategory, initialSpotlightPhoto 
             {/* Header */}
             <header className="text-center px-8 mb-12">
                 <h1 className="font-serif text-4xl md:text-6xl tracking-tight mb-4">Exhibit</h1>
-                <p className="text-gray-500 font-light tracking-wide">
-                    Explore collections through a film-strip experience
-                </p>
             </header>
 
             {/* Category Tabs */}
