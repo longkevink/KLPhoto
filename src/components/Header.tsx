@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
+import { motion, useScroll, useMotionValueEvent, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 export default function Header() {
@@ -12,13 +12,19 @@ export default function Header() {
     const { scrollY } = useScroll();
     const pathname = usePathname();
 
-    // Update header state based on scroll position - threshold 20px
+    // Dynamic thresholds
+    const isHomePage = pathname === '/';
+    const scrollThreshold = isHomePage ? 200 : 20;
+
+    // Update header state based on scroll position
     useMotionValueEvent(scrollY, 'change', (latest) => {
-        const scrolled = latest > 20;
+        const scrolled = latest > scrollThreshold;
         if (scrolled !== isScrolled) {
             setIsScrolled(scrolled);
         }
     });
+
+    const showLogo = isScrolled || !isHomePage;
 
     const links = [
         { href: '/', label: 'Home' },
@@ -40,13 +46,26 @@ export default function Header() {
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         >
             <div className="container mx-auto px-6 flex items-center justify-between">
-                {/* Logo / Home Link */}
-                <Link
-                    href="/"
-                    className="font-serif text-2xl tracking-premium-tight z-50 text-foreground hover:opacity-70 transition-opacity"
-                >
-                    Kevin Long
-                </Link>
+                {/* Logo / Home Link - Only visible when scrolled */}
+                <div className="w-48 h-8 flex items-center">
+                    <AnimatePresence>
+                        {showLogo && (
+                            <motion.div
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -10 }}
+                                transition={{ duration: 0.4, ease: 'easeOut' }}
+                            >
+                                <Link
+                                    href="/"
+                                    className="font-serif text-xl tracking-[0.25em] uppercase z-50 text-foreground hover:opacity-70 transition-opacity whitespace-nowrap"
+                                >
+                                    Kevin Long
+                                </Link>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
 
                 {/* Desktop Navigation */}
                 <nav className="hidden md:flex items-center gap-10">

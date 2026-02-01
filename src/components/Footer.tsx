@@ -16,7 +16,7 @@ export default function Footer() {
 
                 {/* Brand & Copyright */}
                 <div className="text-center">
-                    <p className="font-serif text-2xl mb-4 text-foreground">Kevin Long Photography</p>
+                    <p className="font-serif text-xl tracking-[0.2em] uppercase mb-4 text-foreground">Kevin Long Photography</p>
                     <p className="text-[11px] text-muted tracking-ultra-wide uppercase">
                         &copy; {currentYear} &mdash; All rights reserved.
                     </p>
