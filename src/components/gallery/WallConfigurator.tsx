@@ -46,12 +46,22 @@ export default function WallConfigurator({
     // We use Math.max to ensure the room always COVERS the workspace (like object-cover)
     const zoom = Math.max(workspaceWidth / baseW, workspaceHeight / baseH);
 
-    // --- Frame & Mat Logic ---
-    // ... (rest of the logic remains same, but we will use the zoom for the parent)
+    // Calculate offsets to center the scaled room
+    const offsetX = (workspaceWidth - baseW * zoom) / 2;
+    const offsetY = (workspaceHeight - baseH * zoom) / 2;
+
+    // Environment background mapping
+    const envBackgrounds: Record<GalleryEnvironment, { id: string; fallback: string }> = {
+        home: { id: 'OFFICE_BACKGROUND_pjldjl', fallback: '/photos/travel-01.jpg' }, // Using office as placeholder for now
+        office: { id: 'OFFICE_BACKGROUND_pjldjl', fallback: '/photos/moments-01.jpg' },
+        business: { id: 'OFFICE_BACKGROUND_pjldjl', fallback: '/photos/street-01.jpg' },
+    };
+
+    const currentBg = envBackgrounds[environment];
 
     // Realistic Frame styles using box-shadows
     const getFrameStyles = (style: FrameStyle) => {
-        const baseShadow = "0 10px 20px -5px rgba(0,0,0,0.4), 0 20px 40px -10px rgba(0,0,0,0.3)"; // Deeper shadow for photo background
+        const baseShadow = "0 10px 20px -5px rgba(0,0,0,0.4), 0 20px 40px -10px rgba(0,0,0,0.3)";
 
         switch (style) {
             case 'thin-black':
@@ -68,7 +78,7 @@ export default function WallConfigurator({
                 };
             case 'natural-wood':
                 return {
-                    border: '14px solid #8B5E3C', // Fallback color
+                    border: '14px solid #8B5E3C',
                     backgroundImage: `linear-gradient(45deg, rgba(0,0,0,0.05) 25%, transparent 25%, transparent 50%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.05) 75%, transparent 75%, transparent), linear-gradient(0deg, #8B5E3C, #A06F4B)`,
                     backgroundSize: '4px 4px, 100% 100%',
                     boxShadow: `inset 0 1px 2px rgba(255,255,255,0.2), inset 0 -1px 2px rgba(0,0,0,0.2), ${baseShadow}`,
@@ -81,8 +91,6 @@ export default function WallConfigurator({
     const matClasses = matOption === 'white' ? "p-[8%] bg-[#fdfdfd] shadow-[inset_1px_1px_3px_rgba(0,0,0,0.1)]" : "p-0";
 
     // --- Layout Logic ---
-
-    // Dynamic grid classes
     const getGridConfig = (template: LayoutTemplate) => {
         switch (template) {
             case 'single':
@@ -92,12 +100,12 @@ export default function WallConfigurator({
                 };
             case 'gallery-6':
                 return {
-                    container: 'grid grid-cols-3 gap-8 md:gap-12 max-w-7xl w-full mx-auto px-8 py-12 items-start justify-center', // items-start allows rows to grow naturally
-                    item: 'w-full flex items-center justify-center min-h-[200px]' // min-h for empty state stability
+                    container: 'grid grid-cols-3 gap-8 md:gap-12 max-w-7xl w-full mx-auto px-8 py-12 items-start justify-center',
+                    item: 'w-full flex items-center justify-center min-h-[200px]'
                 };
             case 'collage-5':
                 return {
-                    container: 'grid grid-cols-6 gap-4 max-w-6xl w-full mx-auto px-8 items-center justify-center', // Removed strict rows to allow flow
+                    container: 'grid grid-cols-6 gap-4 max-w-6xl w-full mx-auto px-8 items-center justify-center',
                     item: 'w-full flex items-center justify-center min-h-[150px]'
                 };
             case 'collage-7':
@@ -121,33 +129,44 @@ export default function WallConfigurator({
         <div className="flex-1 relative overflow-hidden flex flex-col h-full w-full bg-neutral-900">
             {/* Unified Scaled Container */}
             <div
-                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transition-all duration-700 ease-in-out"
+                className="absolute transition-all duration-700 ease-in-out"
                 style={{
-                    width: baseW,
-                    height: baseH,
-                    transform: `translate(-50%, -50%) scale(${zoom})`,
-                    transformOrigin: 'center center'
+                    width: `${baseW}px`,
+                    height: `${baseH}px`,
+                    transformOrigin: 'top left',
+                    transform: `translate(${offsetX}px, ${offsetY}px) scale(${zoom})`,
                 }}
             >
                 {/* Background Environment Layer */}
                 <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-                    {cloudinaryCloudName ? (
-                        <CldImage
-                            src="OFFICE_BACKGROUND_pjldjl"
-                            alt="Gallery Environment"
-                            fill
-                            className="object-cover opacity-90"
-                            priority
-                        />
-                    ) : (
-                        <Image
-                            src="/photos/moments-01.jpg"
-                            alt="Gallery Environment"
-                            fill
-                            className="object-cover opacity-90"
-                            priority
-                        />
-                    )}
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={environment}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.8 }}
+                            className="absolute inset-0"
+                        >
+                            {cloudinaryCloudName ? (
+                                <CldImage
+                                    src={currentBg.id}
+                                    alt={`Gallery Environment - ${environment}`}
+                                    fill
+                                    className="object-cover opacity-90"
+                                    priority
+                                />
+                            ) : (
+                                <Image
+                                    src={currentBg.fallback}
+                                    alt={`Gallery Environment - ${environment}`}
+                                    fill
+                                    className="object-cover opacity-90"
+                                    priority
+                                />
+                            )}
+                        </motion.div>
+                    </AnimatePresence>
 
                     {/* Environment Filters */}
                     <div className={cn(

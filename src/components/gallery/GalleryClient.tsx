@@ -61,18 +61,24 @@ export default function GalleryClient({ photosGrouped }: GalleryClientProps) {
     const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
 
     const [transforms] = useState(DEFAULT_TRANSFORMS);
+    const [isMounted, setIsMounted] = useState(false);
 
     // Responsive Scaling Logic
     const [dimensions, setDimensions] = useState({
-        width: typeof window !== 'undefined' ? window.innerWidth : 1440,
-        height: typeof window !== 'undefined' ? window.innerHeight : 900
+        width: 0,
+        height: 0
     });
 
     useEffect(() => {
+        setIsMounted(true);
         const handleResize = () => setDimensions({
             width: window.innerWidth,
             height: window.innerHeight
         });
+
+        // Set initial dimensions
+        handleResize();
+
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
@@ -142,6 +148,11 @@ export default function GalleryClient({ photosGrouped }: GalleryClientProps) {
 
     // Get current transform for active env/layout
     const activeTransform = transforms[environment][layout];
+
+    // Prevent hydration mismatch by only rendering the interactive canvas after mount
+    if (!isMounted) {
+        return <div className="flex h-[calc(100vh-64px)] pt-[64px] bg-neutral-900 overflow-hidden font-sans" />;
+    }
 
     return (
         <div className="flex h-[calc(100vh-64px)] pt-[64px] bg-neutral-900 overflow-hidden font-sans relative">
