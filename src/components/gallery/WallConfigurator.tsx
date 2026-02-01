@@ -32,11 +32,22 @@ export default function WallConfigurator({
     activeSlotIndex,
     onSlotClick,
     onClearSlot,
-    transform = { x: 0, y: 0, scale: 1 }
-}: WallConfiguratorProps) {
+    transform = { x: 0, y: 0, scale: 1 },
+    workspaceWidth = 1440,
+    workspaceHeight = 900
+}: WallConfiguratorProps & { workspaceWidth?: number, workspaceHeight?: number }) {
 
+    // --- Unified Scaling Logic ---
+    // The room coordinate system is fixed at 2400x1600.
+    // We scale the whole room (background + art) to cover/fill the workspace.
+    const baseW = 2400;
+    const baseH = 1600;
+
+    // We use Math.max to ensure the room always COVERS the workspace (like object-cover)
+    const zoom = Math.max(workspaceWidth / baseW, workspaceHeight / baseH);
 
     // --- Frame & Mat Logic ---
+    // ... (rest of the logic remains same, but we will use the zoom for the parent)
 
     // Realistic Frame styles using box-shadows
     const getFrameStyles = (style: FrameStyle) => {
@@ -108,11 +119,18 @@ export default function WallConfigurator({
 
     return (
         <div className="flex-1 relative overflow-hidden flex flex-col h-full w-full bg-neutral-900">
-
-            {/* Background Environment Layer - Static Sizing */}
-            <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-                {/* Fixed large container centered to keep background scale constant across browser sizes */}
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[2400px] h-[1600px]">
+            {/* Unified Scaled Container */}
+            <div
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transition-all duration-700 ease-in-out"
+                style={{
+                    width: baseW,
+                    height: baseH,
+                    transform: `translate(-50%, -50%) scale(${zoom})`,
+                    transformOrigin: 'center center'
+                }}
+            >
+                {/* Background Environment Layer */}
+                <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
                     {cloudinaryCloudName ? (
                         <CldImage
                             src="OFFICE_BACKGROUND_pjldjl"
@@ -130,24 +148,22 @@ export default function WallConfigurator({
                             priority
                         />
                     )}
+
+                    {/* Environment Filters */}
+                    <div className={cn(
+                        "absolute inset-0 transition-colors duration-700",
+                        environment === 'home' && "bg-[#5c4d3c]/20 mix-blend-overlay",
+                        environment === 'business' && "bg-black/40 mix-blend-multiply",
+                        environment === 'office' && "bg-blue-900/10 mix-blend-overlay"
+                    )} />
                 </div>
 
-                {/* Environment Filters based on selection (simulated) */}
-                <div className={cn(
-                    "absolute inset-0 transition-colors duration-700",
-                    environment === 'home' && "bg-[#5c4d3c]/20 mix-blend-overlay", // Warm it up
-                    environment === 'business' && "bg-black/40 mix-blend-multiply", // Darken it
-                    environment === 'office' && "bg-blue-900/10 mix-blend-overlay" // Cool it down
-                )} />
-            </div>
+                {/* Lighting Vignette */}
+                <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/40 pointer-events-none z-[1]" />
 
-            {/* Lighting Vignette - crucial for depth against photo */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/40 pointer-events-none z-[1]" />
-
-            {/* Main Stage */}
-            <div className="relative z-10 flex-1 flex flex-col items-center justify-center min-h-0 overflow-hidden">
+                {/* Main Stage (Aligned to 2400x1600 space) */}
                 <div
-                    className="w-full h-full flex items-center justify-center transition-transform duration-700 ease-in-out"
+                    className="absolute inset-0 z-10 flex items-center justify-center transition-transform duration-700 ease-in-out"
                     style={{
                         transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`
                     }}
@@ -162,64 +178,20 @@ export default function WallConfigurator({
                             className={gridConfig.container}
                         >
                             {slots.map((photo, index) => {
-                                // Logic for Single View Scaling
                                 const isSingle = layout === 'single';
-
-                                // Collage Spanning Logic
-                                // We define this BEFORE style calculation so we can adjust max-heights for big slots
                                 const isBigSlot = layout === 'collage-5' && (index === 0 || index === 1);
-                                const colSpan = isBigSlot ? 'col-span-3' :
-                                    layout === 'collage-5' ? 'col-span-2' : '';
+                                const colSpan = isBigSlot ? 'col-span-3' : layout === 'collage-5' ? 'col-span-2' : '';
 
-                                // --- Dynamic Frame Sizing Logic ---
-
-                                let calculatedSlotStyle: React.CSSProperties = {};
-
-                                if (isSingle && photo) {
-                                    // Single view: Fixed height constraint, allow width to flow
-                                    calculatedSlotStyle = {
-                                        aspectRatio: `${photo.width} / ${photo.height}`,
-                                        height: '70vh',
-                                        width: 'auto'
-                                    };
-                                } else if (isSingle && !photo) {
-                                    // Empty Single view
-                                    calculatedSlotStyle = { aspectRatio: '3/2', height: '60vh' };
-                                } else if (photo) {
-                                    // Grid/Collage view with Photo
-                                    // We MUST anchor one dimension so aspect-ratio has something to work with.
-                                    // otherwise width:auto + height:auto + fill-image = collapse.
-
-                                    const isLandscape = photo.width >= photo.height;
-                                    const maxPortraitHeight = isBigSlot ? '550px' : '400px';
-
-                                    if (isLandscape) {
-                                        // Anchor to the column width
-                                        calculatedSlotStyle = {
-                                            aspectRatio: `${photo.width} / ${photo.height}`,
-                                            width: '100%',
-                                            height: 'auto'
-                                        };
-                                    } else {
-                                        // Anchor to a fixed height to prevent super-tall elements
-                                        calculatedSlotStyle = {
-                                            aspectRatio: `${photo.width} / ${photo.height}`,
-                                            height: maxPortraitHeight,
-                                            width: 'auto',
-                                            // We also need max-width 100% just in case the height drives width wider than column
-                                            maxWidth: '100%'
-                                        };
-                                    }
-
-                                } else {
-                                    // Empty Grid slot
-                                    calculatedSlotStyle = {
-                                        aspectRatio: '1',
-                                        width: '100%',
-                                        height: 'auto'
-                                    };
-                                }
-
+                                // Simplified styling - let the scale handle it
+                                const photoStyle: React.CSSProperties = photo ? {
+                                    aspectRatio: `${photo.width} / ${photo.height}`,
+                                    width: isSingle ? 'auto' : '100%',
+                                    height: isSingle ? '700px' : 'auto',
+                                    maxHeight: isSingle ? '700px' : isBigSlot ? '500px' : '350px'
+                                } : {
+                                    aspectRatio: '1',
+                                    width: '100%'
+                                };
 
                                 return (
                                     <motion.div
@@ -232,7 +204,6 @@ export default function WallConfigurator({
                                             colSpan
                                         )}
                                     >
-                                        {/* Frame Container - This determines the shape */}
                                         <div
                                             className={cn(
                                                 "relative transition-all duration-500",
@@ -240,14 +211,10 @@ export default function WallConfigurator({
                                                 activeSlotIndex === index && photo ? "scale-[1.02] z-20" : "hover:scale-[1.02] hover:z-10",
                                                 !photo && "bg-white/5 backdrop-blur-[2px] border border-white/10 rounded-sm hover:bg-white/10 transition-all duration-500 w-full"
                                             )}
-                                            style={calculatedSlotStyle}
+                                            style={photoStyle}
                                         >
-
                                             {photo ? (
-                                                <div
-                                                    className="w-full h-full relative"
-                                                    style={getFrameStyles(frameStyle)} // Applying frame border here
-                                                >
+                                                <div className="w-full h-full relative" style={getFrameStyles(frameStyle)}>
                                                     <div className={cn("w-full h-full relative overflow-hidden bg-neutral-50", matClasses)}>
                                                         <div className="relative w-full h-full shadow-[inset_1px_1px_15px_rgba(0,0,0,0.15)]">
                                                             {photo.cloudinaryId && cloudinaryCloudName ? (
@@ -256,7 +223,7 @@ export default function WallConfigurator({
                                                                     alt={photo.alt}
                                                                     fill
                                                                     className="object-cover"
-                                                                    sizes={isSingle ? "80vw" : "(max-width: 768px) 50vw, 33vw"}
+                                                                    sizes="400px" // Better estimate for grid
                                                                 />
                                                             ) : (
                                                                 <Image
@@ -264,17 +231,12 @@ export default function WallConfigurator({
                                                                     alt={photo.alt}
                                                                     fill
                                                                     className="object-cover"
-                                                                    sizes={isSingle ? "80vw" : "(max-width: 768px) 50vw, 33vw"}
+                                                                    sizes="400px"
                                                                 />
                                                             )}
                                                         </div>
                                                     </div>
-
-                                                    {/* Reflection Overlay (Glass) */}
                                                     <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/10 to-white/20 pointer-events-none mix-blend-soft-light opacity-60" />
-                                                    <div className="absolute inset-0 bg-gradient-to-bl from-transparent via-transparent to-black/10 pointer-events-none" />
-
-                                                    {/* Remove Button */}
                                                     <button
                                                         onClick={(e) => { e.stopPropagation(); onClearSlot(index); }}
                                                         className="absolute -top-3 -right-3 bg-neutral-900/80 backdrop-blur-md text-white p-1.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 z-50 hover:bg-red-500"
@@ -284,12 +246,7 @@ export default function WallConfigurator({
                                                 </div>
                                             ) : (
                                                 <div className="w-full h-full flex flex-col items-center justify-center text-white/20 gap-3">
-                                                    <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center bg-white/5">
-                                                        <Plus size={isSingle ? 32 : 18} className="opacity-50" />
-                                                    </div>
-                                                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-40">
-                                                        {isSingle ? 'Add Work' : 'Empty'}
-                                                    </span>
+                                                    <Plus size={isSingle ? 32 : 18} />
                                                 </div>
                                             )}
                                         </div>

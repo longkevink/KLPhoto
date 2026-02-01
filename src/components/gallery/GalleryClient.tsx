@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import CldImage from '@/components/ui/CldImage';
 import { Photo, PhotoCategory, GalleryEnvironment, LayoutTemplate, FrameStyle, MatOption } from '@/content/types';
@@ -8,7 +8,7 @@ import PhotoPicker from './PhotoPicker';
 import WallConfigurator from './WallConfigurator';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
-import { Maximize2, RotateCcw, Layout, Home, Building2, Briefcase, Square, Grid3X3 } from 'lucide-react';
+import { Maximize2, RotateCcw, Layout, Home, Building2, Briefcase, Square, Grid3X3, X } from 'lucide-react';
 
 
 interface GalleryClientProps {
@@ -56,8 +56,31 @@ export default function GalleryClient({ photosGrouped }: GalleryClientProps) {
     const [matOption, setMatOption] = useState<MatOption>('white');
     const [activeSlotIndex, setActiveSlotIndex] = useState(0);
 
-    // Wall Position State (The "Control Field")
+    // Sidebar Toggles
+    const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
+    const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
+
     const [transforms] = useState(DEFAULT_TRANSFORMS);
+
+    // Responsive Scaling Logic
+    const [dimensions, setDimensions] = useState({
+        width: typeof window !== 'undefined' ? window.innerWidth : 1440,
+        height: typeof window !== 'undefined' ? window.innerHeight : 900
+    });
+
+    useEffect(() => {
+        const handleResize = () => setDimensions({
+            width: window.innerWidth,
+            height: window.innerHeight
+        });
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    const sidebarWidth = 320;
+    const activeSidebarsWidth = (leftSidebarOpen ? sidebarWidth : 0) + (rightSidebarOpen ? sidebarWidth : 0);
+    const workspaceWidth = dimensions.width - activeSidebarsWidth;
+    const workspaceHeight = dimensions.height - 64; // Header height
 
 
     // Layout Slot Logic
@@ -121,9 +144,33 @@ export default function GalleryClient({ photosGrouped }: GalleryClientProps) {
     const activeTransform = transforms[environment][layout];
 
     return (
-        <div className="flex h-[calc(100vh-64px)] pt-[64px] bg-neutral-900 overflow-hidden font-sans">
+        <div className="flex h-[calc(100vh-64px)] pt-[64px] bg-neutral-900 overflow-hidden font-sans relative">
             {/* Left Rail - Dark Themed */}
-            <PhotoPicker photosGrouped={photosGrouped} onPhotoSelect={handlePhotoSelect} />
+            <div className={cn(
+                "fixed inset-y-0 left-0 pt-[64px] z-40 transition-transform duration-500 ease-in-out lg:relative lg:pt-0",
+                leftSidebarOpen ? "translate-x-0" : "-translate-x-full"
+            )}>
+                <PhotoPicker photosGrouped={photosGrouped} onPhotoSelect={handlePhotoSelect} />
+
+                {/* Mobile/Tablet Close Button */}
+                <button
+                    onClick={() => setLeftSidebarOpen(false)}
+                    className="absolute top-[80px] right-4 p-2 bg-neutral-900 text-white rounded-full lg:hidden"
+                >
+                    <X size={16} />
+                </button>
+            </div>
+
+            {/* Sidebar Toggles (Visible when closed) */}
+            {!leftSidebarOpen && (
+                <button
+                    onClick={() => setLeftSidebarOpen(true)}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 z-30 p-3 bg-white/10 backdrop-blur-xl border border-white/20 text-white rounded-full shadow-2xl hover:bg-white/20 transition-all"
+                    title="Open Collections"
+                >
+                    <Grid3X3 size={20} />
+                </button>
+            )}
 
             {/* Main Canvas Area */}
             <div className="flex-1 relative z-0 bg-neutral-900">
@@ -196,36 +243,57 @@ export default function GalleryClient({ photosGrouped }: GalleryClientProps) {
                             setSlots(newSlots);
                         }}
                         transform={activeTransform}
+                        workspaceWidth={workspaceWidth}
+                        workspaceHeight={workspaceHeight}
                     />
                 </div>
 
                 {/* Floating Bottom Toolbar (Frames) */}
-                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex items-center gap-8 bg-white/80 backdrop-blur-xl border border-white/20 px-8 py-3 rounded-full shadow-2xl transition-all duration-300 hover:bg-white/90">
-                    <div className="flex items-center gap-4">
-                        <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Frame</span>
-                        <div className="flex items-center gap-3">
-                            <button onClick={() => setFrameStyle('thin-black')} className={cn("w-6 h-6 rounded-full bg-black border border-neutral-200 ring-offset-2 transition-all", frameStyle === 'thin-black' && "ring-2 ring-black scale-110")} title="Black" />
-                            <button onClick={() => setFrameStyle('thin-white')} className={cn("w-6 h-6 rounded-full bg-white border border-neutral-200 ring-offset-2 transition-all", frameStyle === 'thin-white' && "ring-2 ring-neutral-300 scale-110")} title="White" />
-                            <button onClick={() => setFrameStyle('natural-wood')} className={cn("w-6 h-6 rounded-full bg-[#8B5E3C] border border-neutral-200 ring-offset-2 transition-all", frameStyle === 'natural-wood' && "ring-2 ring-[#8B5E3C] scale-110")} title="Wood" />
+                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex items-center gap-4 md:gap-8 bg-white/80 backdrop-blur-xl border border-white/20 px-4 md:px-8 py-3 rounded-full shadow-2xl transition-all duration-300 hover:bg-white/90 max-w-[90vw] overflow-x-auto no-scrollbar">
+                    <div className="flex items-center gap-3 md:gap-4 shrink-0">
+                        <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest hidden sm:inline">Frame</span>
+                        <div className="flex items-center gap-2 md:gap-3">
+                            <button onClick={() => setFrameStyle('thin-black')} className={cn("w-5 h-5 md:w-6 md:h-6 rounded-full bg-black border border-neutral-200 ring-offset-2 transition-all", frameStyle === 'thin-black' && "ring-2 ring-black scale-110")} title="Black" />
+                            <button onClick={() => setFrameStyle('thin-white')} className={cn("w-5 h-5 md:w-6 md:h-6 rounded-full bg-white border border-neutral-200 ring-offset-2 transition-all", frameStyle === 'thin-white' && "ring-2 ring-neutral-300 scale-110")} title="White" />
+                            <button onClick={() => setFrameStyle('natural-wood')} className={cn("w-5 h-5 md:w-6 md:h-6 rounded-full bg-[#8B5E3C] border border-neutral-200 ring-offset-2 transition-all", frameStyle === 'natural-wood' && "ring-2 ring-[#8B5E3C] scale-110")} title="Wood" />
                         </div>
                     </div>
 
-                    <div className="w-px h-6 bg-neutral-200" />
+                    <div className="w-px h-6 bg-neutral-200 shrink-0" />
 
-                    <div className="flex items-center gap-4">
-                        <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Mat</span>
+                    <div className="flex items-center gap-3 md:gap-4 shrink-0">
+                        <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest hidden sm:inline">Mat</span>
                         <div className="flex bg-neutral-100/50 rounded-full p-0.5">
-                            <button onClick={() => setMatOption('none')} className={cn("px-3 py-1 text-[10px] uppercase font-bold rounded-full transition-all", matOption === 'none' ? "bg-white shadow-sm text-black" : "text-neutral-400 hover:text-black")} >None</button>
-                            <button onClick={() => setMatOption('white')} className={cn("px-3 py-1 text-[10px] uppercase font-bold rounded-full transition-all", matOption === 'white' ? "bg-white shadow-sm text-black" : "text-neutral-400 hover:text-black")} >White</button>
+                            <button onClick={() => setMatOption('none')} className={cn("px-2 md:px-3 py-1 text-[10px] uppercase font-bold rounded-full transition-all", matOption === 'none' ? "bg-white shadow-sm text-black" : "text-neutral-400 hover:text-black")} >None</button>
+                            <button onClick={() => setMatOption('white')} className={cn("px-2 md:px-3 py-1 text-[10px] uppercase font-bold rounded-full transition-all", matOption === 'white' ? "bg-white shadow-sm text-black" : "text-neutral-400 hover:text-black")} >White</button>
                         </div>
                     </div>
                 </div>
+
+                {/* Right Sidebar Toggle (Visible when closed) */}
+                {!rightSidebarOpen && (
+                    <button
+                        onClick={() => setRightSidebarOpen(true)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 z-30 p-3 bg-white/10 backdrop-blur-xl border border-white/20 text-white rounded-full shadow-2xl hover:bg-white/20 transition-all"
+                        title="Open Details"
+                    >
+                        <Maximize2 size={20} />
+                    </button>
+                )}
             </div>
 
-            {/* Right Detail Panel - Floating Card Style or Standard Sidebar? 
-                Let's keep it standard for now but cleaner. 
-            */}
-            <aside className="w-80 bg-white border-l border-neutral-100 p-0 flex flex-col z-20 shadow-[-10px_0_30px_-10px_rgba(0,0,0,0.05)]">
+            {/* Right Detail Panel */}
+            <aside className={cn(
+                "fixed inset-y-0 right-0 pt-[64px] z-40 w-80 bg-white border-l border-neutral-100 p-0 flex flex-col shadow-[-10px_0_30px_-10px_rgba(0,0,0,0.05)] transition-transform duration-500 ease-in-out lg:relative lg:pt-0 lg:translate-x-0",
+                rightSidebarOpen ? "translate-x-0" : "translate-x-full"
+            )}>
+                {/* Close Button Mobile */}
+                <button
+                    onClick={() => setRightSidebarOpen(false)}
+                    className="absolute top-4 left-4 p-2 bg-neutral-900 text-white rounded-full lg:hidden z-50"
+                >
+                    <X size={16} />
+                </button>
                 {selectedPhoto ? (
                     <div className="flex flex-col h-full animate-in slide-in-from-right-4 duration-500">
                         <div className={cn(
