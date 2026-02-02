@@ -131,7 +131,6 @@ export default function SpotlightModal({ photo, isOpen, onClose }: SpotlightModa
                                     alt={photo.alt}
                                     width={photo.width}
                                     height={photo.height}
-                                    maxDimension={6000}
                                     className="w-auto h-auto max-w-[96vw] max-h-[90vh] object-contain"
                                     sizes="96vw"
                                     priority

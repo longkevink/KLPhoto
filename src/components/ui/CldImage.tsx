@@ -11,7 +11,6 @@ import { getCloudinaryUrl } from '@/lib/cloudinary';
 interface CldImageProps extends Omit<ImageProps, 'src'> {
     src: string; // The Cloudinary public ID
     tint?: string;
-    maxDimension?: number;
     // Add other CldImage props if needed in the future
 }
 
@@ -21,18 +20,11 @@ export default function CldImage({
     height,
     alt,
     className,
-    maxDimension,
+    unoptimized,
     ...props
 }: CldImageProps) {
-    // Generate the URL using our resilient builder
-    // Note: We cast width/height as numbers for the URL builder
-    const cloudinaryUrl = getCloudinaryUrl(src, {
-        width: typeof width === 'number' ? width : undefined,
-        height: typeof height === 'number' ? height : undefined,
-        maxDimension,
-        quality: 'auto',
-        format: 'auto'
-    });
+    // Serve original asset URL for maximum source resolution.
+    const cloudinaryUrl = getCloudinaryUrl(src);
 
     return (
         <Image
@@ -41,6 +33,7 @@ export default function CldImage({
             height={height}
             alt={alt}
             className={className}
+            unoptimized={unoptimized ?? true}
             {...props}
         />
     );

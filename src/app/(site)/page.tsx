@@ -21,7 +21,7 @@ export default function HomePage() {
             {/* Selected Works - Masonry gallery */}
             <section className="py-32 px-4 md:px-8 max-w-[1600px] mx-auto" aria-label="Selected Works">
                 <div className="mb-24 text-center">
-                    <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl tracking-premium-tight text-foreground mb-6">
+                    <h2 className="font-serif text-xl md:text-2xl lg:text-3xl font-light tracking-wide text-foreground mb-4">
                         Selected Works
                     </h2>
                     <div className="h-px w-16 bg-border mx-auto" />

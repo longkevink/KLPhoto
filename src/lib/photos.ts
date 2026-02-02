@@ -33,27 +33,59 @@ export function getFeaturedPhotos(): Photo[] {
 }
 
 /**
- * Curated homepage selection with heavier weighting for Cloudinary images.
- * Prioritizes featured work, then adds variety from series and portraits.
+ * Curated homepage selection for "Selected Works".
+ * Excludes street photos and prioritizes travel.
  */
 export function getHomeGalleryPhotos(limit = 18): Photo[] {
-    const featured = photos.filter((photo) => photo.featured && photo.cloudinaryId);
-    const series = photos.filter((photo) => !photo.featured && photo.series && photo.cloudinaryId);
-    const portraits = photos.filter(
+    const travelFeatured = photos.filter(
+        (photo) => photo.category === 'travel' && photo.featured && photo.cloudinaryId
+    );
+    const travelNonFeatured = photos.filter(
+        (photo) => photo.category === 'travel' && !photo.featured && photo.cloudinaryId
+    );
+    const nonStreetFeatured = photos.filter(
         (photo) =>
+            photo.category !== 'street' &&
+            photo.category !== 'travel' &&
+            photo.featured &&
+            photo.cloudinaryId
+    );
+    const nonStreetSeries = photos.filter(
+        (photo) =>
+            photo.category !== 'street' &&
+            photo.category !== 'travel' &&
+            !photo.featured &&
+            photo.series &&
+            photo.cloudinaryId
+    );
+    const nonStreetPortraits = photos.filter(
+        (photo) =>
+            photo.category !== 'street' &&
+            photo.category !== 'travel' &&
             !photo.featured &&
             photo.orientation === 'portrait' &&
             photo.cloudinaryId
     );
-    const remaining = photos.filter(
+    const nonStreetRemaining = photos.filter(
         (photo) =>
+            photo.category !== 'street' &&
+            photo.category !== 'travel' &&
             !photo.featured &&
             !photo.series &&
             photo.orientation !== 'portrait' &&
             photo.cloudinaryId
     );
 
-    const pools: Photo[][] = [featured, series, portraits, remaining];
+    // Intentionally slot travel twice per round to keep a stronger travel mix.
+    const pools: Photo[][] = [
+        travelFeatured,
+        nonStreetFeatured,
+        travelNonFeatured,
+        nonStreetSeries,
+        travelNonFeatured,
+        nonStreetPortraits,
+        nonStreetRemaining,
+    ];
     const picked: Photo[] = [];
     const usedIds = new Set<string>();
 

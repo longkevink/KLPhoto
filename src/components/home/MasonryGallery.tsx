@@ -3,10 +3,8 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import CldImage from '@/components/ui/CldImage';
-import { motion } from 'framer-motion';
 import { Photo } from '@/content/types';
 import { cn } from '@/lib/utils';
-import { imageReveal, staggerContainer } from '@/lib/motion';
 import { cloudinaryCloudName } from '@/lib/cloudinary';
 import SpotlightModal from '@/components/exhibit/SpotlightModal';
 
@@ -20,19 +18,9 @@ export default function MasonryGallery({ photos, className }: MasonryGalleryProp
 
     return (
         <>
-            <motion.div
-                className={cn('columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8', className)}
-                variants={staggerContainer}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: "-50px" }}
-            >
+            <div className={cn('columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8', className)}>
                 {photos.map((photo) => (
-                    <motion.div
-                        key={photo.id}
-                        className="break-inside-avoid relative group overflow-hidden"
-                        variants={imageReveal}
-                    >
+                    <div key={photo.id} className="break-inside-avoid relative group overflow-hidden">
                         <button
                             type="button"
                             onClick={() => setSelectedPhoto(photo)}
@@ -47,7 +35,7 @@ export default function MasonryGallery({ photos, className }: MasonryGalleryProp
                                         alt={photo.alt}
                                         width={photo.width}
                                         height={photo.height}
-                                        className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                        className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.015]"
                                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                     />
                                 ) : (
@@ -56,17 +44,17 @@ export default function MasonryGallery({ photos, className }: MasonryGalleryProp
                                         alt={photo.alt}
                                         width={photo.width}
                                         height={photo.height}
-                                        className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                        className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.015]"
                                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                     />
                                 )}
                             </div>
 
                             {/* Hover Overlay */}
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500" />
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
 
                             {/* Title Reveal */}
-                            <div className="absolute bottom-0 left-0 right-0 p-6 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 delay-100">
+                            <div className="absolute bottom-0 left-0 right-0 p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-250">
                                 <p className="font-serif text-white text-lg tracking-wide drop-shadow-md">
                                     {photo.title}
                                 </p>
@@ -75,9 +63,9 @@ export default function MasonryGallery({ photos, className }: MasonryGalleryProp
                                 </p>
                             </div>
                         </button>
-                    </motion.div>
+                    </div>
                 ))}
-            </motion.div>
+            </div>
             <SpotlightModal
                 photo={selectedPhoto}
                 isOpen={selectedPhoto !== null}

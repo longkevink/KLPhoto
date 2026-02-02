@@ -25,15 +25,17 @@ export function getCloudinaryUrl(publicId: string, options?: {
 
     const transformations: string[] = [];
 
-    // Cap giant originals before passing through Next image optimization.
-    // Can be raised per use-case (e.g. fullscreen modal) via options.maxDimension.
-    const MAX_DIMENSION = options?.maxDimension ?? 2000;
+    // By default, do not cap source dimensions. This preserves originals.
+    // Callers can still opt into an explicit cap via options.maxDimension.
+    const MAX_DIMENSION = options?.maxDimension;
 
     let w = options?.width;
     let h = options?.height;
 
-    if (w && w > MAX_DIMENSION) w = MAX_DIMENSION;
-    if (h && h > MAX_DIMENSION) h = MAX_DIMENSION;
+    if (MAX_DIMENSION) {
+        if (w && w > MAX_DIMENSION) w = MAX_DIMENSION;
+        if (h && h > MAX_DIMENSION) h = MAX_DIMENSION;
+    }
 
     if (w) transformations.push(`w_${w}`);
     if (h) transformations.push(`h_${h}`);

@@ -156,6 +156,7 @@ export default function GalleryClient({ photosGrouped }: GalleryClientProps) {
 
     return (
         <div className="flex h-[calc(100vh-64px)] pt-[64px] bg-neutral-900 overflow-hidden font-sans relative">
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-[96px] bg-background z-10" aria-hidden="true" />
             {/* Left Rail - Dark Themed */}
             <div className={cn(
                 "fixed inset-y-0 left-0 pt-[64px] z-40 transition-transform duration-500 ease-in-out lg:relative lg:pt-0",
