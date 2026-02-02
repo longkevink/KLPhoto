@@ -12,6 +12,7 @@
 export function getCloudinaryUrl(publicId: string, options?: {
     width?: number;
     height?: number;
+    maxDimension?: number;
     quality?: 'auto' | number;
     format?: 'auto' | 'webp' | 'avif' | 'jpg' | 'png';
 }): string {
@@ -24,10 +25,9 @@ export function getCloudinaryUrl(publicId: string, options?: {
 
     const transformations: string[] = [];
 
-    // ENFORCING DIMENSION CAP
-    // Very large original images (8k+) cause Next.js image optimizer to fail with 400 Bad Request
-    // if requested at full size. We cap at 2000px to let Cloudinary do the initial downscaling.
-    const MAX_DIMENSION = 2000;
+    // Cap giant originals before passing through Next image optimization.
+    // Can be raised per use-case (e.g. fullscreen modal) via options.maxDimension.
+    const MAX_DIMENSION = options?.maxDimension ?? 2000;
 
     let w = options?.width;
     let h = options?.height;

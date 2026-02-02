@@ -33,6 +33,44 @@ export function getFeaturedPhotos(): Photo[] {
 }
 
 /**
+ * Curated homepage selection with heavier weighting for Cloudinary images.
+ * Prioritizes featured work, then adds variety from series and portraits.
+ */
+export function getHomeGalleryPhotos(limit = 18): Photo[] {
+    const featured = photos.filter((photo) => photo.featured && photo.cloudinaryId);
+    const series = photos.filter((photo) => !photo.featured && photo.series && photo.cloudinaryId);
+    const portraits = photos.filter(
+        (photo) =>
+            !photo.featured &&
+            photo.orientation === 'portrait' &&
+            photo.cloudinaryId
+    );
+    const remaining = photos.filter(
+        (photo) =>
+            !photo.featured &&
+            !photo.series &&
+            photo.orientation !== 'portrait' &&
+            photo.cloudinaryId
+    );
+
+    const pools: Photo[][] = [featured, series, portraits, remaining];
+    const picked: Photo[] = [];
+    const usedIds = new Set<string>();
+
+    while (picked.length < limit && pools.some((pool) => pool.length > 0)) {
+        for (const pool of pools) {
+            const next = pool.shift();
+            if (!next || usedIds.has(next.id)) continue;
+            usedIds.add(next.id);
+            picked.push(next);
+            if (picked.length === limit) break;
+        }
+    }
+
+    return picked;
+}
+
+/**
  * Get photos grouped by category
  * Returns an object with category keys and photo arrays
  */

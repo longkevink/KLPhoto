@@ -17,16 +17,97 @@ interface FilmStripProps {
     isActive: boolean;
 }
 
-export default function FilmStrip({ photos, onPhotoClick, className, isActive }: FilmStripProps) {
+// Single horizontal strip component
+function HorizontalStrip({
+    photos,
+    onPhotoClick,
+    rowIndex
+}: {
+    photos: Photo[];
+    onPhotoClick: (photo: Photo) => void;
+    rowIndex: number;
+}) {
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // Simple drag scroll handler
-    // Implementation note: a robust drag-to-scroll often requires more state
-    // For v1, relying on native overflow-x-auto with touch/trackpad support + buttons
-    // is safer than a complex JS drag implementation that might conflict with scroll-snap
+    return (
+        <div
+            ref={containerRef}
+            className="flex gap-6 overflow-x-auto px-8 py-4 no-scrollbar"
+            role="region"
+            aria-label={`Photo strip row ${rowIndex + 1}`}
+        >
+            {photos.map((photo, index) => (
+                <motion.button
+                    key={photo.id}
+                    onClick={() => onPhotoClick(photo)}
+                    className="flex-shrink-0 group outline-none focus-visible:ring-2 focus-visible:ring-black rounded-sm"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: (rowIndex * photos.length + index) * 0.02 }}
+                    style={{
+                        height: '45vh',
+                    }}
+                >
+                    <div className="bg-white p-3 md:p-4 shadow-sm group-hover:shadow-xl transition-shadow duration-300 h-full flex flex-col">
+                        <div
+                            className="relative bg-gray-100 overflow-hidden flex-grow"
+                            style={{
+                                aspectRatio: `${photo.width} / ${photo.height}`,
+                                height: '100%',
+                            }}
+                        >
+                            {photo.cloudinaryId && cloudinaryCloudName ? (
+                                <CldImage
+                                    src={photo.cloudinaryId}
+                                    alt={photo.alt}
+                                    width={Math.round(1000 * (photo.width / photo.height))}
+                                    height={1000}
+                                    className="w-full h-full object-contain"
+                                    sizes="(max-width: 768px) 90vw, 50vw"
+                                    priority={rowIndex === 0 && index < 3}
+                                />
+                            ) : (
+                                <Image
+                                    src={photo.src}
+                                    alt={photo.alt}
+                                    width={Math.round(1000 * (photo.width / photo.height))}
+                                    height={1000}
+                                    className="w-full h-full object-contain"
+                                    sizes="(max-width: 768px) 90vw, 50vw"
+                                    priority={rowIndex === 0 && index < 3}
+                                />
+                            )}
+                            {/* Hover Overlay */}
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
+                        </div>
 
+                        <div className="mt-2 flex justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 shrink-0">
+                            <span className="font-serif text-sm md:text-base tracking-wide truncate pr-2">{photo.title}</span>
+                            <span className="text-xs md:text-sm text-gray-400 uppercase tracking-widest shrink-0">View</span>
+                        </div>
+                    </div>
+                </motion.button>
+            ))}
+        </div>
+    );
+}
 
+export default function FilmStrip({ photos, onPhotoClick, className, isActive }: FilmStripProps) {
     if (!isActive) return null;
+
+    // Split photos into rows (3-4 rows based on photo count)
+    const rowCount = photos.length > 20 ? 4 : 3;
+    const photosPerRow = Math.ceil(photos.length / rowCount);
+
+    const rows: Photo[][] = [];
+    for (let i = 0; i < rowCount; i++) {
+        const start = i * photosPerRow;
+        const end = start + photosPerRow;
+        const rowPhotos = photos.slice(start, end);
+        if (rowPhotos.length > 0) {
+            rows.push(rowPhotos);
+        }
+    }
 
     return (
         <motion.div
@@ -35,66 +116,15 @@ export default function FilmStrip({ photos, onPhotoClick, className, isActive }:
             animate="visible"
             variants={fadeIn}
         >
-            <div
-                ref={containerRef}
-                className="flex gap-8 overflow-x-auto snap-x snap-mandatory px-8 pb-12 pt-4 no-scrollbar items-center"
-                role="region"
-                aria-label="Photo strip"
-            >
-                {/* Spacer for first item */}
-                <div className="flex-shrink-0 w-8 md:w-32" />
-
-                {photos.map((photo, index) => (
-                    <motion.button
-                        key={photo.id}
-                        onClick={() => onPhotoClick(photo)}
-                        className="flex-shrink-0 snap-center group outline-none focus-visible:ring-2 focus-visible:ring-black rounded-sm"
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: index * 0.05 }}
-                        style={{
-                            width: photo.orientation === 'landscape' ? '60vw' : '40vw',
-                            maxWidth: photo.orientation === 'landscape' ? '800px' : '500px',
-                            minWidth: '300px',
-                        }}
-                    >
-                        <div className="bg-white p-2 md:p-6 shadow-sm group-hover:shadow-lg transition-shadow duration-300">
-                            <div className="relative bg-gray-100 overflow-hidden" style={{ aspectRatio: `${photo.width} / ${photo.height}` }}>
-                                {photo.cloudinaryId && cloudinaryCloudName ? (
-                                    <CldImage
-                                        src={photo.cloudinaryId}
-                                        alt={photo.alt}
-                                        width={photo.width}
-                                        height={photo.height}
-                                        className="w-full h-full object-cover"
-                                        sizes="(max-width: 768px) 80vw, 60vw"
-                                        priority={index < 2}
-                                    />
-                                ) : (
-                                    <Image
-                                        src={photo.src}
-                                        alt={photo.alt}
-                                        width={photo.width}
-                                        height={photo.height}
-                                        className="w-full h-full object-cover"
-                                        sizes="(max-width: 768px) 80vw, 60vw"
-                                        priority={index < 2}
-                                    />
-                                )}
-                                {/* Hover Overlay */}
-                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
-                            </div>
-
-                            <div className="mt-4 flex justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                <span className="font-serif text-sm tracking-wide">{photo.title}</span>
-                                <span className="text-xs text-gray-400 uppercase tracking-widest">View</span>
-                            </div>
-                        </div>
-                    </motion.button>
+            <div className="flex flex-col gap-4">
+                {rows.map((rowPhotos, rowIndex) => (
+                    <HorizontalStrip
+                        key={rowIndex}
+                        photos={rowPhotos}
+                        onPhotoClick={onPhotoClick}
+                        rowIndex={rowIndex}
+                    />
                 ))}
-
-                {/* Spacer for last item */}
-                <div className="flex-shrink-0 w-8 md:w-32" />
             </div>
         </motion.div>
     );

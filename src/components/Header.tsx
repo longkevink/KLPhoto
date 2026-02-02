@@ -14,6 +14,7 @@ export default function Header() {
 
     // Dynamic thresholds
     const isHomePage = pathname === '/';
+    const isGalleryPage = pathname === '/gallery';
     const scrollThreshold = isHomePage ? 200 : 20;
 
     // Update header state based on scroll position
@@ -24,7 +25,8 @@ export default function Header() {
         }
     });
 
-    const showLogo = isScrolled || !isHomePage;
+    const isScrolledOrGallery = isScrolled || isGalleryPage;
+    const showLogo = isScrolledOrGallery || !isHomePage;
 
     const links = [
         { href: '/', label: 'Home' },
@@ -37,7 +39,7 @@ export default function Header() {
         <motion.header
             className={cn(
                 'fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out',
-                isScrolled
+                isScrolledOrGallery
                     ? 'bg-background/80 backdrop-blur-xl border-b border-border/50 py-3 shadow-sm'
                     : 'bg-transparent py-6'
             )}

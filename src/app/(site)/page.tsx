@@ -1,4 +1,4 @@
-import { getFeaturedPhotos } from '@/lib/photos';
+import { getHomeGalleryPhotos } from '@/lib/photos';
 import Hero from '@/components/home/Hero';
 import MasonryGallery from '@/components/home/MasonryGallery';
 import { CustomLink } from '@/components/ui/Button';
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default function HomePage() {
-    const featuredPhotos = getFeaturedPhotos();
+    const featuredPhotos = getHomeGalleryPhotos(18);
 
     return (
         <main className="min-h-screen bg-background">

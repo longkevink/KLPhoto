@@ -19,7 +19,7 @@ export default async function ExhibitPage({ searchParams }: ExhibitPageProps) {
     const spotlightPhoto = spotlightPhotoId ? getPhotoById(spotlightPhotoId) : null;
 
     // Get data server-side
-    const categories: PhotoCategory[] = ['street', 'travel'];
+    const categories: PhotoCategory[] = ['street', 'travel', 'moments'];
     const photosByCategory = Object.fromEntries(
         categories.map((cat) => [cat, getPhotosByCategory(cat)])
     ) as Record<PhotoCategory, ReturnType<typeof getPhotosByCategory>>;

@@ -82,7 +82,7 @@ export default function SpotlightModal({ photo, isOpen, onClose }: SpotlightModa
         <AnimatePresence>
             {isOpen && (
                 <div
-                    className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8"
+                    className="fixed inset-0 z-[100] flex items-center justify-center p-2 md:p-3"
                     role="dialog"
                     aria-modal="true"
                     aria-label={`View ${photo.title}`}
@@ -100,7 +100,7 @@ export default function SpotlightModal({ photo, isOpen, onClose }: SpotlightModa
                     {/* Modal Content - White Plate */}
                     <motion.div
                         ref={modalRef}
-                        className="relative bg-white p-2 md:p-4 shadow-2xl max-h-full max-w-full overflow-hidden"
+                        className="relative bg-white p-1.5 md:p-2 shadow-2xl max-h-[98vh] max-w-[98vw] overflow-hidden"
                         variants={plateVariants}
                         initial="hidden"
                         animate="visible"
@@ -117,9 +117,10 @@ export default function SpotlightModal({ photo, isOpen, onClose }: SpotlightModa
 
                         {/* Image Container */}
                         <motion.div
-                            className="relative overflow-hidden bg-gray-100"
+                            className="relative overflow-hidden bg-gray-100 flex items-center justify-center"
                             style={{
-                                maxHeight: '85vh',
+                                maxHeight: '90vh',
+                                maxWidth: '96vw',
                                 aspectRatio: `${photo.width} / ${photo.height}`
                             }}
                             variants={imageVariants}
@@ -130,8 +131,9 @@ export default function SpotlightModal({ photo, isOpen, onClose }: SpotlightModa
                                     alt={photo.alt}
                                     width={photo.width}
                                     height={photo.height}
-                                    className="w-full h-full object-contain"
-                                    sizes="90vw"
+                                    maxDimension={6000}
+                                    className="w-auto h-auto max-w-[96vw] max-h-[90vh] object-contain"
+                                    sizes="96vw"
                                     priority
                                 />
                             ) : (
@@ -140,8 +142,8 @@ export default function SpotlightModal({ photo, isOpen, onClose }: SpotlightModa
                                     alt={photo.alt}
                                     width={photo.width}
                                     height={photo.height}
-                                    className="w-full h-full object-contain"
-                                    sizes="90vw"
+                                    className="w-auto h-auto max-w-[96vw] max-h-[90vh] object-contain"
+                                    sizes="96vw"
                                     priority
                                 />
                             )}

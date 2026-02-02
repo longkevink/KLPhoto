@@ -17,9 +17,9 @@ interface ExhibitClientProps {
 export default function ExhibitClient({ photosByCategory, initialSpotlightPhoto }: ExhibitClientProps) {
     const searchParams = useSearchParams();
 
-    const categories: PhotoCategory[] = ['street', 'travel'];
+    const categories: PhotoCategory[] = ['street', 'travel', 'moments'];
 
-    const [activeCategory, setActiveCategory] = useState<PhotoCategory>('street');
+    const [activeCategory, setActiveCategory] = useState<PhotoCategory>('travel');
     const [spotlightPhoto, setSpotlightPhoto] = useState<Photo | null>(initialSpotlightPhoto);
     const [isModalOpen, setIsModalOpen] = useState(!!initialSpotlightPhoto);
 
@@ -59,15 +59,15 @@ export default function ExhibitClient({ photosByCategory, initialSpotlightPhoto 
     };
 
     return (
-        <div className="min-h-screen pt-24 pb-20">
+        <div className="min-h-screen pt-20 pb-10">
             {/* Header */}
-            <header className="text-center px-8 mb-12">
-                <h1 className="font-serif text-4xl md:text-6xl tracking-tight mb-4">Exhibit</h1>
+            <header className="text-center px-8 mb-6">
+                <h1 className="font-serif text-3xl md:text-5xl tracking-tight mb-2">Exhibit</h1>
             </header>
 
             {/* Category Tabs */}
             <nav
-                className="flex justify-center gap-8 md:gap-16 mb-16 border-b border-gray-100 pb-px"
+                className="flex justify-center gap-6 md:gap-12 mb-8 border-b border-gray-100 pb-px"
                 aria-label="Category navigation"
             >
                 {categories.map((category) => (
@@ -75,7 +75,7 @@ export default function ExhibitClient({ photosByCategory, initialSpotlightPhoto 
                         key={category}
                         onClick={() => handleCategoryChange(category)}
                         className={cn(
-                            "pb-4 text-sm uppercase tracking-widest transition-all duration-300 relative",
+                            "pb-2 text-xs uppercase tracking-widest transition-all duration-300 relative",
                             activeCategory === category
                                 ? "text-black font-medium"
                                 : "text-gray-400 hover:text-gray-800"
@@ -93,7 +93,7 @@ export default function ExhibitClient({ photosByCategory, initialSpotlightPhoto 
             </nav>
 
             {/* Film Strip Content area */}
-            <div className="min-h-[60vh] flex flex-col justify-center">
+            <div className="flex-grow flex flex-col justify-center">
                 {/* We render all strips but only show active to preserve state/scroll position if desired, 
             OR we enforce unmount for clean entrance animations. 
             Let's use AnimatePresence mode="wait" for clean transitions between categories. 
