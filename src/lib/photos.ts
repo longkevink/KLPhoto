@@ -33,6 +33,20 @@ export function getFeaturedPhotos(): Photo[] {
 }
 
 /**
+ * Get the single hero photo for the home page.
+ * Prioritizes a specific ID if known, otherwise first featured landscape.
+ */
+export function getHeroPhoto(): Photo | null {
+    // Ideally we pick a specific strong image.
+    // For now, let's pick '-a733931-vjjbiz' (Travel I landscape) or fallback to first featured.
+    const specificId = '-a733931-vjjbiz';
+    const specific = photos.find(p => p.id === specificId && p.cloudinaryId);
+    if (specific) return specific;
+
+    return photos.find(p => p.featured && p.orientation === 'landscape' && p.cloudinaryId) || null;
+}
+
+/**
  * Curated homepage selection for "Selected Works".
  * Excludes street photos and prioritizes travel.
  */

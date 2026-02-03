@@ -52,9 +52,9 @@ export default function WallConfigurator({
 
     // Environment background mapping
     const envBackgrounds: Record<GalleryEnvironment, { id: string; fallback: string }> = {
-        home: { id: 'OFFICE_BACKGROUND_pjldjl', fallback: '/photos/travel-01.jpg' }, // Using office as placeholder for now
+        home: { id: 'home_ehrv5c', fallback: '/photos/travel-01.jpg' },
         office: { id: 'OFFICE_BACKGROUND_pjldjl', fallback: '/photos/moments-01.jpg' },
-        business: { id: 'OFFICE_BACKGROUND_pjldjl', fallback: '/photos/street-01.jpg' },
+        business: { id: 'coffeehouse_qg2maq', fallback: '/photos/street-01.jpg' },
     };
 
     const currentBg = envBackgrounds[environment];
@@ -90,33 +90,122 @@ export default function WallConfigurator({
 
     const matClasses = matOption === 'white' ? "p-[8%] bg-[#fdfdfd] shadow-[inset_1px_1px_3px_rgba(0,0,0,0.1)]" : "p-0";
 
+    // --- Safe Zones Configuration ---
+    // Defines the "mountable" wall area for each environment as percentages
+    type WallZoneDisplay = {
+        top: string;
+        left: string;
+        width: string;
+        height: string;
+    };
+
+    type WallZone = WallZoneDisplay & {
+        overrides?: Partial<Record<LayoutTemplate, Partial<WallZoneDisplay>>> & {
+            'single-portrait'?: Partial<WallZoneDisplay>;
+            'single-landscape'?: Partial<WallZoneDisplay>;
+        };
+    };
+
+    const wallZones: Record<GalleryEnvironment, WallZone> = {
+        home: {
+            top: '8%',      // Moved up 10% from 18%
+            left: '20.25%', // Recentered for 59.5% width
+            width: '59.5%', // Scaled down 15% from 70%
+            height: '38.25%', // Scaled down 15% from 45%
+            overrides: {
+                'single-landscape': {
+                    top: '13.5%',
+                    left: '36.5%',
+                    width: '31%',
+                    height: '22%'
+                },
+                'single-portrait': {
+                    top: '9%',
+                    left: '41.2%',
+                    width: '17.6%',
+                    height: '38.5%'
+                }
+            }
+        },
+        office: {
+            top: '20%',
+            left: '20%',
+            width: '60%',
+            height: '50%',
+            overrides: {
+                'single-portrait': {
+                    top: '26%',     // Slightly more down
+                    left: '45%',    // Significantly more right
+                    width: '22%',
+                    height: '50%'
+                }
+            }
+        },
+        business: {
+            top: '15%',
+            left: '28%',
+            width: '42.5%',
+            height: '38.25%',
+            overrides: {
+                'single-landscape': {
+                    top: '14%',
+                    left: '33%',    // Moved further right from 28%
+                    width: '35%',
+                    height: '35%'
+                },
+                'single-portrait': {
+                    top: '15%',
+                    left: '42%',    // Moved further right from 35%
+                    width: '22%',
+                    height: '49.5%'
+                }
+            }
+        }
+    };
+
+    const baseZone = wallZones[environment];
+
+    // Determine the specific layout key for overrides
+    const photo = slots[0]; // For single layout, this is the main image
+    let layoutKey: string = layout;
+    if (layout === 'single' && photo) {
+        layoutKey = `single-${photo.orientation || 'landscape'}`;
+    }
+
+    const currentZone = {
+        ...baseZone,
+        ...(baseZone.overrides?.[layoutKey as LayoutTemplate] || baseZone.overrides?.[layout] || {})
+    };
+
+
     // --- Layout Logic ---
     const getGridConfig = (template: LayoutTemplate) => {
+        // Now valid within the Safe Zone, so we use full width/height of that zone
         switch (template) {
             case 'single':
                 return {
-                    container: 'flex items-center justify-center w-full h-full p-8 md:p-16',
-                    item: 'relative w-auto h-auto max-h-[70vh] max-w-[90vw] shadow-2xl flex items-center justify-center'
+                    container: 'flex items-center justify-center w-full h-full p-4',
+                    item: 'relative w-auto h-auto max-h-[90%] max-w-[90%] flex items-center justify-center'
                 };
             case 'gallery-6':
                 return {
-                    container: 'grid grid-cols-3 gap-8 md:gap-12 max-w-7xl w-full mx-auto px-8 py-12 items-start justify-center',
-                    item: 'w-full flex items-center justify-center min-h-[200px]'
+                    container: 'grid grid-cols-3 gap-6 w-full h-full items-center content-center px-4',
+                    item: 'w-full aspect-[3/2] flex items-center justify-center'
                 };
             case 'collage-5':
                 return {
-                    container: 'grid grid-cols-6 gap-4 max-w-6xl w-full mx-auto px-8 items-center justify-center',
-                    item: 'w-full flex items-center justify-center min-h-[150px]'
+                    container: 'grid grid-cols-6 gap-3 w-full h-full items-center content-center px-4',
+                    item: 'w-full flex items-center justify-center'
                 };
             case 'collage-7':
                 return {
-                    container: 'grid grid-cols-4 gap-4 max-w-6xl w-full mx-auto px-8 items-center justify-center',
-                    item: 'w-full flex items-center justify-center min-h-[150px]'
+                    container: 'grid grid-cols-4 gap-3 w-full h-full items-center content-center px-4',
+                    item: 'w-full flex items-center justify-center'
                 };
             case 'collage-9':
                 return {
-                    container: 'grid grid-cols-3 gap-4 md:gap-8 max-w-5xl w-full mx-auto px-8 items-center justify-center',
-                    item: 'w-full flex items-center justify-center min-h-[150px]'
+                    container: 'grid grid-cols-3 gap-3 w-full h-full items-center content-center px-4',
+                    item: 'w-full aspect-square flex items-center justify-center'
                 };
             default:
                 return { container: '', item: '' };
@@ -180,16 +269,20 @@ export default function WallConfigurator({
                 {/* Lighting Vignette */}
                 <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/40 pointer-events-none z-[1]" />
 
-                {/* Main Stage (Aligned to 2400x1600 space) */}
+                {/* Main Stage (Aligned to Safe Zones) */}
                 <div
-                    className="absolute inset-0 z-10 flex items-center justify-center transition-transform duration-700 ease-in-out"
+                    className="absolute z-10 transition-all duration-700 ease-in-out"
                     style={{
+                        top: currentZone.top,
+                        left: currentZone.left,
+                        width: currentZone.width,
+                        height: currentZone.height,
                         transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`
                     }}
                 >
                     <AnimatePresence mode='wait'>
                         <motion.div
-                            key={layout}
+                            key={`${layout}-${environment}`} // Re-render when env changes to recalc sizes
                             initial={{ opacity: 0, scale: 0.98 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.98 }}
@@ -201,15 +294,18 @@ export default function WallConfigurator({
                                 const isBigSlot = layout === 'collage-5' && (index === 0 || index === 1);
                                 const colSpan = isBigSlot ? 'col-span-3' : layout === 'collage-5' ? 'col-span-2' : '';
 
-                                // Simplified styling - let the scale handle it
-                                const photoStyle: React.CSSProperties = photo ? {
-                                    aspectRatio: `${photo.width} / ${photo.height}`,
-                                    width: isSingle ? 'auto' : '100%',
-                                    height: isSingle ? '700px' : 'auto',
-                                    maxHeight: isSingle ? '700px' : isBigSlot ? '500px' : '350px'
+                                // For Single view: we want the image to define the aspect ratio
+                                // The container will flex-center it.
+                                // We won't use 'fill' for single view, instead standard responsive sizing.
+                                const gridCellStyle: React.CSSProperties = isSingle ? {
+                                    width: '100%',
+                                    height: '100%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
                                 } : {
-                                    aspectRatio: '1',
-                                    width: '100%'
+                                    width: '100%',
+                                    height: '100%'
                                 };
 
                                 return (
@@ -218,39 +314,63 @@ export default function WallConfigurator({
                                         layoutId={isSingle ? undefined : `slot-${index}`}
                                         onClick={() => onSlotClick(index)}
                                         className={cn(
-                                            "relative group cursor-pointer transition-all duration-300",
+                                            "relative group cursor-pointer transition-all duration-300 flex items-center justify-center",
                                             gridConfig.item,
                                             colSpan
                                         )}
+                                        style={gridCellStyle}
                                     >
                                         <div
                                             className={cn(
                                                 "relative transition-all duration-500",
                                                 activeSlotIndex === index && !photo ? "ring-2 ring-white/50 ring-offset-4 ring-offset-transparent" : "",
                                                 activeSlotIndex === index && photo ? "scale-[1.02] z-20" : "hover:scale-[1.02] hover:z-10",
-                                                !photo && "bg-white/5 backdrop-blur-[2px] border border-white/10 rounded-sm hover:bg-white/10 transition-all duration-500 w-full"
+                                                !photo && "bg-white/5 backdrop-blur-[2px] border border-white/10 rounded-sm hover:bg-white/10 transition-all duration-500 w-full aspect-square"
                                             )}
-                                            style={photoStyle}
+                                            style={(!isSingle) ? {
+                                                width: '100%',
+                                                height: '100%',
+                                                // Used for grid aspect ratio, single will use image's own
+                                            } : {
+                                                // For single, constraints come from parent flex item max-w/h
+                                                maxWidth: '100%',
+                                                maxHeight: '100%',
+                                                width: 'auto',
+                                                height: 'auto'
+                                            }}
                                         >
                                             {photo ? (
                                                 <div className="w-full h-full relative" style={getFrameStyles(frameStyle)}>
                                                     <div className={cn("w-full h-full relative overflow-hidden bg-neutral-50", matClasses)}>
                                                         <div className="relative w-full h-full shadow-[inset_1px_1px_15px_rgba(0,0,0,0.15)]">
-                                                            {photo.cloudinaryId && cloudinaryCloudName ? (
+                                                            {(photo.cloudinaryId && cloudinaryCloudName) ? (
                                                                 <CldImage
                                                                     src={photo.cloudinaryId}
                                                                     alt={photo.alt}
-                                                                    fill
-                                                                    className="object-cover"
-                                                                    sizes="400px" // Better estimate for grid
+                                                                    // Dual mode:
+                                                                    // Single: explicit width/height to drive 'auto' container size
+                                                                    // Grid: 'fill' to conform to grid cell
+                                                                    fill={!isSingle}
+                                                                    width={isSingle ? photo.width : undefined}
+                                                                    height={isSingle ? photo.height : undefined}
+                                                                    className={cn(
+                                                                        "object-cover",
+                                                                        isSingle && "max-w-full max-h-full w-auto h-auto"
+                                                                    )}
+                                                                    sizes={isSingle ? "80vw" : "(max-width: 768px) 100vw, 33vw"}
                                                                 />
                                                             ) : (
                                                                 <Image
                                                                     src={photo.src}
                                                                     alt={photo.alt}
-                                                                    fill
-                                                                    className="object-cover"
-                                                                    sizes="400px"
+                                                                    fill={!isSingle}
+                                                                    width={isSingle ? photo.width : undefined}
+                                                                    height={isSingle ? photo.height : undefined}
+                                                                    className={cn(
+                                                                        "object-cover",
+                                                                        isSingle && "max-w-full max-h-full w-auto h-auto"
+                                                                    )}
+                                                                    sizes={isSingle ? "80vw" : "(max-width: 768px) 100vw, 33vw"}
                                                                 />
                                                             )}
                                                         </div>

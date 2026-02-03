@@ -1,9 +1,17 @@
 'use client';
 
+import Image from 'next/image';
+import CldImage from '@/components/ui/CldImage';
+import { Photo } from '@/content/types';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { fadeInUp, fadeIn } from '@/lib/motion';
+import { cloudinaryCloudName } from '@/lib/cloudinary';
 
-export default function Hero() {
+interface HeroProps {
+    photo?: Photo;
+}
+
+export default function Hero({ photo }: HeroProps) {
     const { scrollY } = useScroll();
 
     // Parallax effect for the text layer
@@ -15,13 +23,48 @@ export default function Hero() {
             className="relative flex h-screen w-full items-center justify-center overflow-hidden bg-background"
             aria-label="Hero"
         >
-            {/* Background - Gallery White from tokens */}
-            <motion.div
-                className="absolute inset-0 bg-background"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 1.5 }}
-            />
+            {/* Background Image */}
+            <div className="absolute inset-0 z-0">
+                {photo ? (
+                    <>
+                        <motion.div
+                            className="relative w-full h-full"
+                            initial={{ scale: 1.1, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ duration: 1.5, ease: "easeOut" }}
+                        >
+                            {photo.cloudinaryId && cloudinaryCloudName ? (
+                                <CldImage
+                                    src={photo.cloudinaryId}
+                                    alt={photo.alt}
+                                    fill
+                                    className="object-cover"
+                                    sizes="100vw"
+                                    priority
+                                />
+                            ) : (
+                                <Image
+                                    src={photo.src}
+                                    alt={photo.alt}
+                                    fill
+                                    className="object-cover"
+                                    sizes="100vw"
+                                    priority
+                                />
+                            )}
+                        </motion.div>
+                        {/* Overlay for text readability */}
+                        <div className="absolute inset-0 bg-black/20" />
+                    </>
+                ) : (
+                    <motion.div
+                        className="absolute inset-0 bg-background"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 1.5 }}
+                    />
+                )}
+            </div>
 
             {/* Content */}
             <motion.div
@@ -32,17 +75,17 @@ export default function Hero() {
                 variants={fadeInUp}
             >
                 <motion.h1
-                    className="font-serif text-6xl md:text-8xl lg:text-[10rem] tracking-ultra-wide text-foreground mb-4 leading-[0.9] uppercase"
+                    className="font-serif text-6xl md:text-8xl lg:text-[10rem] tracking-ultra-wide text-white mb-4 leading-[0.9] uppercase drop-shadow-md"
                     layoutId="heroTitle"
                 >
                     Kevin Long
                 </motion.h1>
 
                 <motion.p
-                    className="text-sm md:text-base font-medium text-muted uppercase tracking-ultra-wide font-sans mt-8"
+                    className="text-sm md:text-base font-medium text-white/90 uppercase tracking-ultra-wide font-sans mt-8 drop-shadow-md"
                     variants={fadeIn}
                 >
-                    Fine Art & Street Photography
+                    Travel, Moments, & Street Photography
                 </motion.p>
             </motion.div>
 

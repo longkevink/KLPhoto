@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import Image from 'next/image';
 import CldImage from '@/components/ui/CldImage';
 import { motion } from 'framer-motion';
@@ -28,19 +28,60 @@ function HorizontalStrip({
     rowIndex: number;
 }) {
     const containerRef = useRef<HTMLDivElement>(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const [startX, setStartX] = useState(0);
+    const [scrollLeft, setScrollLeft] = useState(0);
+
+    const handleMouseDown = (e: React.MouseEvent) => {
+        if (!containerRef.current) return;
+        setIsDragging(true);
+        setStartX(e.pageX - containerRef.current.offsetLeft);
+        setScrollLeft(containerRef.current.scrollLeft);
+    };
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        if (!isDragging || !containerRef.current) return;
+        e.preventDefault();
+        const x = e.pageX - containerRef.current.offsetLeft;
+        const walk = (x - startX) * 2; // scroll speed multiplier
+        containerRef.current.scrollLeft = scrollLeft - walk;
+    };
+
+    const handleMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    const handleMouseLeave = () => {
+        setIsDragging(false);
+    };
+
+    // Prepare click handler - prevent click if we were dragging
+    const handlePhotoClick = (e: React.MouseEvent, photo: Photo) => {
+        if (isDragging) {
+            e.stopPropagation();
+            return;
+        }
+        onPhotoClick(photo);
+    };
 
     return (
         <div
             ref={containerRef}
-            className="flex gap-6 overflow-x-auto px-8 py-4 no-scrollbar"
+            className={cn(
+                "flex gap-6 overflow-x-auto px-8 py-4 no-scrollbar cursor-grab active:cursor-grabbing",
+                !isDragging && "snap-x snap-mandatory" // Disable snap while dragging for smoothness
+            )}
             role="region"
             aria-label={`Photo strip row ${rowIndex + 1}`}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseLeave}
         >
             {photos.map((photo, index) => (
-                <motion.button
+                <motion.div
                     key={photo.id}
-                    onClick={() => onPhotoClick(photo)}
-                    className="flex-shrink-0 group outline-none focus-visible:ring-2 focus-visible:ring-black rounded-sm"
+                    className="flex-shrink-0 snap-center" // Snap alignment
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: (rowIndex * photos.length + index) * 0.02 }}
@@ -48,12 +89,17 @@ function HorizontalStrip({
                         height: '45vh',
                     }}
                 >
-                    <div className="bg-white p-3 md:p-4 shadow-sm group-hover:shadow-xl transition-shadow duration-300 h-full flex flex-col">
+                    <button
+                        onClick={(e) => handlePhotoClick(e, photo)}
+                        className="group outline-none focus-visible:ring-2 focus-visible:ring-black rounded-sm h-full block text-left bg-white p-3 md:p-4 shadow-sm hover:shadow-xl transition-shadow duration-300 flex flex-col"
+                    >
                         <div
-                            className="relative bg-gray-100 overflow-hidden flex-grow"
+                            className="relative bg-gray-100 overflow-hidden flex-grow pointer-events-none" // prevent image drag
                             style={{
                                 aspectRatio: `${photo.width} / ${photo.height}`,
-                                height: '100%',
+                                height: 'auto',
+                                width: 'auto',
+                                maxHeight: '100%'
                             }}
                         >
                             {photo.cloudinaryId && cloudinaryCloudName ? (
@@ -62,7 +108,7 @@ function HorizontalStrip({
                                     alt={photo.alt}
                                     width={Math.round(1000 * (photo.width / photo.height))}
                                     height={1000}
-                                    className="w-full h-full object-contain"
+                                    className="w-full h-full object-contain pointer-events-none"
                                     sizes="(max-width: 768px) 90vw, 50vw"
                                     priority={rowIndex === 0 && index < 3}
                                 />
@@ -72,7 +118,7 @@ function HorizontalStrip({
                                     alt={photo.alt}
                                     width={Math.round(1000 * (photo.width / photo.height))}
                                     height={1000}
-                                    className="w-full h-full object-contain"
+                                    className="w-full h-full object-contain pointer-events-none"
                                     sizes="(max-width: 768px) 90vw, 50vw"
                                     priority={rowIndex === 0 && index < 3}
                                 />
@@ -85,8 +131,8 @@ function HorizontalStrip({
                             <span className="font-serif text-sm md:text-base tracking-wide truncate pr-2">{photo.title}</span>
                             <span className="text-xs md:text-sm text-gray-400 uppercase tracking-widest shrink-0">View</span>
                         </div>
-                    </div>
-                </motion.button>
+                    </button>
+                </motion.div>
             ))}
         </div>
     );

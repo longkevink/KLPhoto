@@ -1,4 +1,4 @@
-import { getHomeGalleryPhotos } from '@/lib/photos';
+import { getHomeGalleryPhotos, getHeroPhoto } from '@/lib/photos';
 import Hero from '@/components/home/Hero';
 import MasonryGallery from '@/components/home/MasonryGallery';
 import { CustomLink } from '@/components/ui/Button';
@@ -7,16 +7,17 @@ import { Metadata } from 'next';
 export const metadata: Metadata = {
     title: 'Kevin Long Photography',
     description:
-        'Boutique photography gallery featuring street, travel, and moments prints available for purchase.',
+        'Boutique photography gallery featuring travel, moments, and street prints available for purchase.',
 };
 
 export default function HomePage() {
     const featuredPhotos = getHomeGalleryPhotos(18);
+    const heroPhoto = getHeroPhoto();
 
     return (
         <main className="min-h-screen bg-background">
             {/* Hero Section */}
-            <Hero />
+            <Hero photo={heroPhoto || undefined} />
 
             {/* Selected Works - Masonry gallery */}
             <section className="py-32 px-4 md:px-8 max-w-[1600px] mx-auto" aria-label="Selected Works">

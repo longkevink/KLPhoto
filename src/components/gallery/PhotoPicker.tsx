@@ -13,7 +13,7 @@ interface PhotoPickerProps {
 }
 
 export default function PhotoPicker({ photosGrouped, onPhotoSelect }: PhotoPickerProps) {
-    const categories: PhotoCategory[] = ['street', 'travel'];
+    const categories: PhotoCategory[] = ['travel', 'street'];
 
     return (
         <aside className="w-80 h-full bg-white border-r border-neutral-100 overflow-y-auto flex flex-col z-10 scrollbar-thin scrollbar-thumb-neutral-200">

@@ -17,7 +17,7 @@ interface ExhibitClientProps {
 export default function ExhibitClient({ photosByCategory, initialSpotlightPhoto }: ExhibitClientProps) {
     const searchParams = useSearchParams();
 
-    const categories: PhotoCategory[] = ['street', 'travel', 'moments'];
+    const categories: PhotoCategory[] = ['travel', 'moments', 'street'];
 
     const [activeCategory, setActiveCategory] = useState<PhotoCategory>('travel');
     const [spotlightPhoto, setSpotlightPhoto] = useState<Photo | null>(initialSpotlightPhoto);
