@@ -14,9 +14,10 @@ interface DraggablePhotoProps {
     photo: PhotoCard;
     onSelect: (photo: PhotoCard) => void;
     disableMotion?: boolean;
+    compact?: boolean;
 }
 
-const DraggablePhoto = memo(function DraggablePhoto({ photo, onSelect, disableMotion }: DraggablePhotoProps) {
+const DraggablePhoto = memo(function DraggablePhoto({ photo, onSelect, disableMotion, compact = false }: DraggablePhotoProps) {
     const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
         id: photo.id,
         data: photo,
@@ -32,7 +33,8 @@ const DraggablePhoto = memo(function DraggablePhoto({ photo, onSelect, disableMo
             whileHover={disableMotion ? undefined : { scale: 1.03, y: -2 }}
             whileTap={disableMotion ? undefined : { scale: 0.98 }}
             className={cn(
-                "break-inside-avoid mb-3 group relative w-full bg-neutral-100 rounded-lg overflow-hidden focus-visible:ring-2 focus-visible:ring-black outline-none shadow-sm transition-all flex items-center justify-center touch-none",
+                'break-inside-avoid group relative w-full bg-neutral-100 rounded-lg overflow-hidden focus-visible:ring-2 focus-visible:ring-black outline-none shadow-sm transition-all flex items-center justify-center touch-none tap-target',
+                compact ? 'mb-0' : 'mb-3',
                 photo.orientation === 'landscape' ? "aspect-[3/2]" : "aspect-[2/3]",
                 !disableMotion && "hover:shadow-md",
                 isDragging && "opacity-50 grayscale"
@@ -78,25 +80,40 @@ interface PhotoPickerProps {
     photosGrouped: Record<PhotoCategory, PhotoCard[]>;
     onPhotoSelect: (photo: PhotoCard) => void;
     performanceMode?: boolean;
+    compact?: boolean;
+    className?: string;
 }
 
-export default function PhotoPicker({ photosGrouped, onPhotoSelect, performanceMode = false }: PhotoPickerProps) {
+export default function PhotoPicker({
+    photosGrouped,
+    onPhotoSelect,
+    performanceMode = false,
+    compact = false,
+    className,
+}: PhotoPickerProps) {
     const categories: PhotoCategory[] = ['travel', 'street'];
     const shouldReduceMotion = useAdaptiveMotion() || performanceMode;
 
     return (
-        <aside className="w-80 h-full bg-white border-r border-neutral-100 overflow-y-auto flex flex-col z-10 scrollbar-thin scrollbar-thumb-neutral-200">
-            <div className="p-6 sticky top-0 bg-white/90 backdrop-blur-md z-20 border-b border-neutral-50">
-                <h2 className="font-serif text-2xl tracking-tight text-neutral-900">Collections</h2>
+        <aside
+            className={cn(
+                compact
+                    ? 'w-full h-auto rounded-2xl bg-white border border-neutral-100 overflow-y-auto flex flex-col z-10'
+                    : 'w-80 h-full bg-white border-r border-neutral-100 overflow-y-auto flex flex-col z-10 scrollbar-thin scrollbar-thumb-neutral-200',
+                className
+            )}
+        >
+            <div className={cn(compact ? 'p-4 border-b border-neutral-100' : 'p-6 sticky top-0 bg-white/90 backdrop-blur-md z-20 border-b border-neutral-50')}>
+                <h2 className={cn('font-serif tracking-tight text-neutral-900', compact ? 'text-xl' : 'text-2xl')}>Collections</h2>
                 <p className="text-xs text-neutral-400 mt-2 font-medium">
-                    Drag or click photos to add to wall.
+                    {compact ? 'Tap a photo to add it to the active slot.' : 'Drag or click photos to add to wall.'}
                 </p>
             </div>
 
-            <div className="p-6 space-y-10 pb-20">
+            <div className={cn(compact ? 'p-4 space-y-6 pb-6' : 'p-6 space-y-10 pb-20')}>
                 {categories.map((category) => (
                     <div key={category}>
-                        <div className="flex items-center justify-between mb-4 sticky top-[88px] bg-white/95 py-2 z-10 backdrop-blur-sm">
+                        <div className={cn('flex items-center justify-between mb-3', compact ? '' : 'sticky top-[88px] bg-white/95 py-2 z-10 backdrop-blur-sm')}>
                             <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-400">
                                 {category}
                             </h3>
@@ -105,13 +122,14 @@ export default function PhotoPicker({ photosGrouped, onPhotoSelect, performanceM
                             </span>
                         </div>
 
-                        <div className="columns-2 gap-3 space-y-3">
+                        <div className={cn(compact ? 'grid grid-cols-3 gap-2' : 'columns-2 gap-3 space-y-3')}>
                             {photosGrouped[category]?.map((photo) => (
                                 <DraggablePhoto
                                     key={photo.id}
                                     photo={photo}
                                     onSelect={onPhotoSelect}
                                     disableMotion={shouldReduceMotion}
+                                    compact={compact}
                                 />
                             ))}
                         </div>

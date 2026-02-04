@@ -7,6 +7,13 @@
   --border: #EAEAEA;
   --font-outfit: "Avenir Next", "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --font-instrument: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, serif;
+  --space-fluid-xs: clamp(0.5rem, 0.35rem + 0.6vw, 0.75rem);
+  --space-fluid-sm: clamp(0.75rem, 0.6rem + 0.8vw, 1rem);
+  --space-fluid-md: clamp(1rem, 0.7rem + 1.5vw, 1.75rem);
+  --space-fluid-lg: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+  --text-fluid-sm: clamp(0.8125rem, 0.78rem + 0.18vw, 0.9375rem);
+  --text-fluid-md: clamp(1rem, 0.95rem + 0.3vw, 1.125rem);
+  --text-fluid-lg: clamp(1.75rem, 1.1rem + 2.4vw, 3rem);
 }
 
 @theme inline {
@@ -24,6 +31,46 @@ body {
   font-family: var(--font-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+main,
+section {
+  min-width: 0;
+}
+
+.min-h-screen-safe {
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+.tap-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.text-fluid-sm {
+  font-size: var(--text-fluid-sm);
+}
+
+.text-fluid-md {
+  font-size: var(--text-fluid-md);
+}
+
+.text-fluid-lg {
+  font-size: var(--text-fluid-lg);
+}
+
+.space-fluid-y {
+  padding-top: var(--space-fluid-lg);
+  padding-bottom: var(--space-fluid-lg);
+}
+
+@media (max-width: 767px) {
+  html,
+  body {
+    overflow-x: hidden;
+  }
 }
 
 .tracking-premium {

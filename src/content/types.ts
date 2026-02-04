@@ -93,3 +93,7 @@ export type LayoutTemplate =
     | 'collage-5'   // 5 photos mixed format
     | 'collage-7'   // 7 photos mixed format
     | 'collage-9';  // 9 photos mixed format
+
+export type GalleryViewMode = 'desktop' | 'mobile-guided';
+
+export type GalleryMobileStep = 'photo' | 'environment' | 'layout' | 'style' | 'purchase';

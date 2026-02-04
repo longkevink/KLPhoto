@@ -11,23 +11,31 @@ export interface GalleryDetailsPanelProps {
     selectedPhoto: PhotoCard | null;
     rightSidebarOpen: boolean;
     onCloseSidebar: () => void;
+    mobile?: boolean;
 }
 
 export const GalleryDetailsPanel = memo(function GalleryDetailsPanel({
     selectedPhoto,
     rightSidebarOpen,
     onCloseSidebar,
+    mobile = false,
 }: GalleryDetailsPanelProps) {
     return (
         <aside
             className={cn(
-                'fixed inset-y-0 right-0 pt-[64px] z-40 w-80 bg-white border-l border-neutral-100 p-0 flex flex-col shadow-[-10px_0_30px_-10px_rgba(0,0,0,0.05)] transition-transform duration-500 ease-in-out lg:relative lg:pt-0 lg:translate-x-0',
-                rightSidebarOpen ? 'translate-x-0' : 'translate-x-full'
+                mobile
+                    ? 'fixed inset-x-0 bottom-0 z-40 bg-white border-t border-neutral-100 p-0 flex flex-col shadow-[0_-20px_35px_-18px_rgba(0,0,0,0.25)] transition-transform duration-500 ease-in-out rounded-t-2xl max-h-[70svh]'
+                    : 'fixed inset-y-0 right-0 pt-[64px] z-40 w-80 bg-white border-l border-neutral-100 p-0 flex flex-col shadow-[-10px_0_30px_-10px_rgba(0,0,0,0.05)] transition-transform duration-500 ease-in-out lg:relative lg:pt-0 lg:translate-x-0',
+                rightSidebarOpen ? 'translate-x-0 translate-y-0' : mobile ? 'translate-y-full' : 'translate-x-full'
             )}
         >
             <button
                 onClick={onCloseSidebar}
-                className="absolute top-4 left-4 p-2 bg-neutral-900 text-white rounded-full lg:hidden z-50"
+                className={cn(
+                    'absolute p-2 bg-neutral-900 text-white rounded-full z-50 tap-target',
+                    mobile ? 'top-3 right-3 left-auto' : 'top-4 left-4 lg:hidden'
+                )}
+                aria-label="Close details"
             >
                 <X size={16} />
             </button>
@@ -63,9 +71,9 @@ export const GalleryDetailsPanel = memo(function GalleryDetailsPanel({
                         </div>
                     </div>
 
-                    <div className="p-8 flex-1 flex flex-col">
-                        <div className="mb-6">
-                            <h3 className="font-serif text-2xl text-neutral-900 leading-tight">{selectedPhoto.title}</h3>
+                    <div className={cn('flex-1 flex flex-col', mobile ? 'p-5' : 'p-8')}>
+                        <div className={cn(mobile ? 'mb-4' : 'mb-6')}>
+                            <h3 className={cn('font-serif text-neutral-900 leading-tight', mobile ? 'text-xl' : 'text-2xl')}>{selectedPhoto.title}</h3>
                             <div className="flex items-center gap-2 mt-2">
                                 <span className="px-2 py-0.5 bg-neutral-100 text-neutral-500 text-[10px] font-bold uppercase tracking-widest rounded-sm">
                                     {selectedPhoto.category}
@@ -74,7 +82,7 @@ export const GalleryDetailsPanel = memo(function GalleryDetailsPanel({
                             </div>
                         </div>
 
-                        <p className="text-sm text-neutral-500 leading-relaxed mb-8 flex-1">
+                        <p className={cn('text-sm text-neutral-500 leading-relaxed flex-1', mobile ? 'mb-5' : 'mb-8')}>
                             High-resolution archival pigment print on Hahnemuhle Photo Rag 308gsm. Museum quality,
                             designed to last a lifetime without fading.
                         </p>

@@ -62,15 +62,15 @@ export default function ExhibitClient({ photosByCategory, initialSpotlightPhoto 
     };
 
     return (
-        <div className="min-h-screen pt-20 pb-10">
+        <div className="min-h-screen-safe pt-18 md:pt-20 pb-8 md:pb-10">
             {/* Header */}
-            <header className="text-center px-8 mb-6">
-                <h1 className="font-serif text-3xl md:text-5xl tracking-tight mb-2">Exhibit</h1>
+            <header className="text-center px-4 md:px-8 mb-4 md:mb-6">
+                <h1 className="font-serif text-[clamp(2rem,9vw,3.2rem)] tracking-tight mb-2">Exhibit</h1>
             </header>
 
             {/* Category Tabs */}
             <nav
-                className="flex justify-center gap-6 md:gap-12 mb-8 border-b border-gray-100 pb-px"
+                className="flex justify-center gap-3 md:gap-12 mb-6 md:mb-8 border-b border-gray-100 pb-px px-2 overflow-x-auto"
                 aria-label="Category navigation"
             >
                 {categories.map((category) => (
@@ -78,7 +78,7 @@ export default function ExhibitClient({ photosByCategory, initialSpotlightPhoto 
                         key={category}
                         onClick={() => handleCategoryChange(category)}
                         className={cn(
-                            "pb-2 text-xs uppercase tracking-widest transition-all duration-300 relative",
+                            "pb-2 px-2 md:px-0 text-[11px] md:text-xs uppercase tracking-widest transition-all duration-300 relative tap-target",
                             activeCategory === category
                                 ? "text-black font-medium"
                                 : "text-gray-400 hover:text-gray-800"

@@ -22,7 +22,7 @@ export default function Hero({ photo }: HeroProps) {
 
     return (
         <section
-            className="relative flex h-screen w-full items-center justify-center overflow-hidden bg-background"
+            className="relative flex min-h-screen-safe w-full items-center justify-center overflow-hidden bg-background"
             aria-label="Hero"
         >
             {/* Background Image */}
@@ -70,21 +70,21 @@ export default function Hero({ photo }: HeroProps) {
 
             {/* Content */}
             <motion.div
-                className="relative z-10 text-center px-4"
+                className="relative z-10 text-center px-4 md:px-6"
                 style={{ y, opacity }}
                 initial="hidden"
                 animate="visible"
                 variants={fadeInUp}
             >
                 <motion.h1
-                    className="font-serif text-6xl md:text-8xl lg:text-[10rem] tracking-ultra-wide text-white mb-4 leading-[0.9] uppercase drop-shadow-md"
+                    className="font-serif text-[clamp(2.8rem,14vw,10rem)] tracking-[0.12em] md:tracking-ultra-wide text-white mb-3 md:mb-4 leading-[0.9] uppercase drop-shadow-md"
                     layoutId="heroTitle"
                 >
                     Kevin Long
                 </motion.h1>
 
                 <motion.p
-                    className="text-sm md:text-base font-medium text-white/90 uppercase tracking-ultra-wide font-sans mt-8 drop-shadow-md"
+                    className="text-fluid-sm md:text-base font-medium text-white/90 uppercase tracking-[0.08em] md:tracking-ultra-wide font-sans mt-6 md:mt-8 drop-shadow-md"
                     variants={fadeIn}
                 >
                     Travel, Moments, & Street Photography
@@ -93,7 +93,7 @@ export default function Hero({ photo }: HeroProps) {
 
             {/* Scroll indicator */}
             <motion.div
-                className="absolute bottom-12 left-1/2 -translate-x-1/2 text-border transform"
+                className="absolute bottom-8 md:bottom-12 left-1/2 -translate-x-1/2 text-border transform"
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={shouldReduceMotion ? { duration: 0 } : { delay: 1, duration: 1, repeat: Infinity, repeatType: 'reverse' }}

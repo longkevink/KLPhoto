@@ -85,7 +85,7 @@ export default function SpotlightModal({ photo, isOpen, onClose }: SpotlightModa
         <AnimatePresence>
             {isOpen && (
                 <div
-                    className="fixed inset-0 z-[100] flex items-center justify-center p-2 md:p-3"
+                    className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-3"
                     role="dialog"
                     aria-modal="true"
                     aria-label={`View ${photo.title}`}
@@ -103,7 +103,7 @@ export default function SpotlightModal({ photo, isOpen, onClose }: SpotlightModa
                     {/* Modal Content - White Plate */}
                     <motion.div
                         ref={modalRef}
-                        className="relative bg-white p-1.5 md:p-2 shadow-2xl max-h-[98vh] max-w-[98vw] overflow-hidden"
+                        className="relative bg-white p-1.5 md:p-2 shadow-2xl max-h-[96svh] w-full md:max-w-[98vw] md:w-auto overflow-hidden rounded-t-xl md:rounded-none"
                         variants={plateVariants}
                         initial="hidden"
                         animate="visible"
@@ -112,7 +112,7 @@ export default function SpotlightModal({ photo, isOpen, onClose }: SpotlightModa
                         {/* Close Button */}
                         <button
                             onClick={onClose}
-                            className="absolute top-4 right-4 z-20 p-2 bg-white/10 hover:bg-white/20 text-black md:text-white rounded-full transition-colors mix-blend-difference"
+                            className="absolute top-3 right-3 md:top-4 md:right-4 z-20 p-2 bg-white/10 hover:bg-white/20 text-black md:text-white rounded-full transition-colors mix-blend-difference tap-target"
                             aria-label="Close"
                         >
                             <X size={24} />
@@ -122,8 +122,8 @@ export default function SpotlightModal({ photo, isOpen, onClose }: SpotlightModa
                         <motion.div
                             className="relative overflow-hidden bg-gray-100 flex items-center justify-center"
                             style={{
-                                maxHeight: '90vh',
-                                maxWidth: '96vw',
+                                maxHeight: '82svh',
+                                maxWidth: '100vw',
                                 aspectRatio: `${photo.width} / ${photo.height}`
                             }}
                             variants={imageVariants}
@@ -134,8 +134,8 @@ export default function SpotlightModal({ photo, isOpen, onClose }: SpotlightModa
                                     alt={photo.alt}
                                     width={photo.width}
                                     height={photo.height}
-                                    className="w-auto h-auto max-w-[96vw] max-h-[90vh] object-contain"
-                                    sizes="96vw"
+                                    className="w-auto h-auto max-w-[100vw] md:max-w-[96vw] max-h-[82svh] md:max-h-[90vh] object-contain"
+                                    sizes="(max-width: 768px) 100vw, 96vw"
                                     loading="eager"
                                 />
                             ) : (
@@ -144,8 +144,8 @@ export default function SpotlightModal({ photo, isOpen, onClose }: SpotlightModa
                                     alt={photo.alt}
                                     width={photo.width}
                                     height={photo.height}
-                                    className="w-auto h-auto max-w-[96vw] max-h-[90vh] object-contain"
-                                    sizes="96vw"
+                                    className="w-auto h-auto max-w-[100vw] md:max-w-[96vw] max-h-[82svh] md:max-h-[90vh] object-contain"
+                                    sizes="(max-width: 768px) 100vw, 96vw"
                                     loading="eager"
                                 />
                             )}
@@ -156,7 +156,7 @@ export default function SpotlightModal({ photo, isOpen, onClose }: SpotlightModa
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={shouldReduceMotion ? { duration: 0 } : { delay: 0.5 }}
-                            className="mt-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-[#1A1A1A]"
+                            className="mt-3 md:mt-4 px-2 pb-2 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-4 text-[#1A1A1A]"
                         >
                             <div>
                                 <h2 className="font-serif text-2xl">{photo.title}</h2>
