@@ -275,23 +275,23 @@ export default function WallConfigurator({
             }
         },
         business: {
-            // Calibrated: Scaled down additional 15%
+            // Calibrated: Scaled down additional 10%
             top: '18%',
-            left: '30.9%',     // Centered for 38.2% width
-            width: '38.2%',    // 45% * 0.85
-            height: '30.6%',   // 36% * 0.85
+            left: '32.8%',    // Centered for 34.4% width
+            width: '34.4%',   // 38.2% * 0.9
+            height: '27.5%',  // 30.6% * 0.9
             overrides: {
                 'single-landscape': {
                     top: '20%',
-                    left: '32%',    // Keeping existing single overrides for consistency
-                    width: '36%',
-                    height: '31.5%'
+                    left: '33.8%',    // Centered for 32.4% width
+                    width: '32.4%',   // 36% * 0.9
+                    height: '28.4%'   // 31.5% * 0.9
                 },
                 'single-portrait': {
                     top: '18%',
-                    left: '41%',
-                    width: '18%',
-                    height: '40.5%'
+                    left: '41.9%',    // Centered for 16.2% width
+                    width: '16.2%',   // 18% * 0.9
+                    height: '36.5%'   // 40.5% * 0.9
                 }
             }
         }
