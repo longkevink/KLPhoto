@@ -10,7 +10,7 @@ interface CloudinaryUrlOptions {
     crop?: CloudinaryCrop;
 }
 
-export const cloudinaryCloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+export const cloudinaryCloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME?.trim();
 
 export function getCloudinaryFallbackUrl(width = 800, height = 600): string {
     return `https://via.placeholder.com/${width}x${height}?text=Cloudinary+Config+Missing`;
