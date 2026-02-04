@@ -5,8 +5,6 @@
   --foreground: #000000;
   --muted: #404040;
   --border: #EAEAEA;
-  --font-outfit: "Avenir Next", "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  --font-instrument: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, serif;
   --space-fluid-xs: clamp(0.5rem, 0.35rem + 0.6vw, 0.75rem);
   --space-fluid-sm: clamp(0.75rem, 0.6rem + 0.8vw, 1rem);
   --space-fluid-md: clamp(1rem, 0.7rem + 1.5vw, 1.75rem);

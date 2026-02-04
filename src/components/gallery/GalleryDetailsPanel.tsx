@@ -78,12 +78,12 @@ export const GalleryDetailsPanel = memo(function GalleryDetailsPanel({
                                 <span className="px-2 py-0.5 bg-neutral-100 text-neutral-500 text-[10px] font-bold uppercase tracking-widest rounded-sm">
                                     {selectedPhoto.category}
                                 </span>
-                                {selectedPhoto.series && <span className="text-neutral-400 text-xs">- {selectedPhoto.series}</span>}
+                                {selectedPhoto.series && <span className="text-neutral-400 text-xs">— {selectedPhoto.series}</span>}
                             </div>
                         </div>
 
                         <p className={cn('text-sm text-neutral-500 leading-relaxed flex-1', mobile ? 'mb-5' : 'mb-8')}>
-                            High-resolution archival pigment print on Hahnemuhle Photo Rag 308gsm. Museum quality,
+                            High-resolution archival pigment print on Hahnemühle Photo Rag 308gsm. Museum quality,
                             designed to last a lifetime without fading.
                         </p>
 

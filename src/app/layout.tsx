@@ -1,10 +1,24 @@
 import type { Metadata } from "next";
+import { Instrument_Serif, Outfit } from "next/font/google";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SkipLink from "@/components/ui/SkipLink";
 import ClientTelemetry from "@/components/observability/ClientTelemetry";
 import { validateEnv } from "@/lib/env";
 import "./globals.css";
+
+const instrument = Instrument_Serif({
+  weight: "400",
+  variable: "--font-instrument",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const outfit = Outfit({
+  variable: "--font-outfit",
+  subsets: ["latin"],
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -46,7 +60,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className="font-sans antialiased bg-background text-foreground flex flex-col min-h-screen"
+        className={`${instrument.variable} ${outfit.variable} font-sans antialiased bg-background text-foreground flex flex-col min-h-screen`}
       >
         <SkipLink />
         <Header />
