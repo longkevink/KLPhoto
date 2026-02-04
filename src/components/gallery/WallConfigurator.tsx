@@ -8,6 +8,137 @@ import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus } from 'lucide-react';
 import { cloudinaryCloudName } from '@/lib/cloudinary';
+import { useDroppable } from '@dnd-kit/core';
+
+// Inner component for Droppable Logic
+const WallSlot = ({
+    index,
+    photo,
+    activeSlotIndex,
+    onSlotClick,
+    onClearSlot,
+    gridConfig,
+    layout,
+    frameStyle,
+    matClasses,
+    colSpan
+}: any) => {
+    const { setNodeRef, isOver } = useDroppable({
+        id: `slot-${index}`,
+    });
+
+    const isSingle = layout === 'single';
+    // For Single AND Grid views: we want the image to define the aspect ratio
+    const isGridFit = layout === 'gallery-6' || layout.startsWith('collage');
+
+    const gridCellStyle: React.CSSProperties = (isSingle || isGridFit) ? {
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+    } : {
+        width: '100%',
+        height: '100%'
+    };
+
+    return (
+        <motion.div
+            ref={setNodeRef}
+            key={`slot-${index}`}
+            layoutId={isSingle ? undefined : `slot-${index}`}
+            onClick={() => onSlotClick(index)}
+            className={cn(
+                "relative group cursor-pointer transition-all duration-300 flex items-center justify-center",
+                gridConfig.item,
+                colSpan,
+                isOver && !photo && "ring-2 ring-white scale-105 z-20" // Highlight when dragging over
+            )}
+            style={gridCellStyle}
+        >
+            <div
+                className={cn(
+                    "relative transition-all duration-500",
+                    activeSlotIndex === index && !photo ? "ring-2 ring-white/50 ring-offset-4 ring-offset-transparent" : "",
+                    activeSlotIndex === index && photo ? "scale-[1.02] z-20" : "hover:scale-[1.02] hover:z-10",
+                    !photo && "bg-white/5 backdrop-blur-[2px] border border-white/10 rounded-sm hover:bg-white/10 transition-all duration-500 w-full aspect-square"
+                )}
+                style={(photo && (isSingle || isGridFit)) ? {
+                    // For single/grid, constraints come from parent flex item max-w/h
+                    maxWidth: '100%',
+                    maxHeight: '100%',
+                    width: 'auto',
+                    height: 'auto'
+                } : {
+                    width: '100%',
+                    height: '100%',
+                }}
+            >
+                {photo ? (
+                    <div className="w-full h-full relative" style={{
+                        ...((frameStyle === 'thin-black' && {
+                            border: '12px solid #1a1a1a',
+                            boxShadow: `inset 0 0 2px rgba(255,255,255,0.1), 0 10px 20px -5px rgba(0,0,0,0.4), 0 20px 40px -10px rgba(0,0,0,0.3)`,
+                            backgroundColor: '#1a1a1a'
+                        }) || (frameStyle === 'thin-white' && {
+                            border: '12px solid #f5f5f5',
+                            boxShadow: `inset 0 0 2px rgba(0,0,0,0.05), 0 10px 20px -5px rgba(0,0,0,0.4), 0 20px 40px -10px rgba(0,0,0,0.3)`,
+                            backgroundColor: '#f5f5f5'
+                        }) || (frameStyle === 'natural-wood' && {
+                            border: '14px solid #8B5E3C',
+                            backgroundImage: `linear-gradient(45deg, rgba(0,0,0,0.05) 25%, transparent 25%, transparent 50%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.05) 75%, transparent 75%, transparent), linear-gradient(0deg, #8B5E3C, #A06F4B)`,
+                            backgroundSize: '4px 4px, 100% 100%',
+                            boxShadow: `inset 0 1px 2px rgba(255,255,255,0.2), inset 0 -1px 2px rgba(0,0,0,0.2), 0 10px 20px -5px rgba(0,0,0,0.4), 0 20px 40px -10px rgba(0,0,0,0.3)`,
+                        }) || { border: '10px solid black' })
+                    }}>
+                        <div className={cn("w-full h-full relative overflow-hidden bg-neutral-50", matClasses)}>
+                            <div className="relative w-full h-full shadow-[inset_1px_1px_15px_rgba(0,0,0,0.15)]">
+                                {(photo.cloudinaryId && cloudinaryCloudName) ? (
+                                    <CldImage
+                                        src={photo.cloudinaryId}
+                                        alt={photo.alt}
+                                        fill={!(isSingle || isGridFit)}
+                                        width={(isSingle || isGridFit) ? photo.width : undefined}
+                                        height={(isSingle || isGridFit) ? photo.height : undefined}
+                                        className={cn(
+                                            "object-cover",
+                                            (isSingle || isGridFit) && "max-w-full max-h-full w-auto h-auto"
+                                        )}
+                                        sizes={(isSingle || isGridFit) ? "50vw" : "(max-width: 768px) 100vw, 33vw"}
+                                    />
+                                ) : (
+                                    <Image
+                                        src={photo.src}
+                                        alt={photo.alt}
+                                        fill={!(isSingle || isGridFit)}
+                                        width={(isSingle || isGridFit) ? photo.width : undefined}
+                                        height={(isSingle || isGridFit) ? photo.height : undefined}
+                                        className={cn(
+                                            "object-cover",
+                                            (isSingle || isGridFit) && "max-w-full max-h-full w-auto h-auto"
+                                        )}
+                                        sizes={(isSingle || isGridFit) ? "50vw" : "(max-width: 768px) 100vw, 33vw"}
+                                    />
+                                )}
+                            </div>
+                        </div>
+                        <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/10 to-white/20 pointer-events-none mix-blend-soft-light opacity-60" />
+                        <button
+                            onClick={(e) => { e.stopPropagation(); onClearSlot(index); }}
+                            className="absolute -top-3 -right-3 bg-neutral-900/80 backdrop-blur-md text-white p-1.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 z-50 hover:bg-red-500"
+                        >
+                            <X size={14} />
+                        </button>
+                    </div>
+                ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center text-white/20 gap-3">
+                        <Plus size={isSingle ? 32 : 18} />
+                    </div>
+                )}
+            </div>
+        </motion.div>
+    );
+}
 
 
 
@@ -108,56 +239,59 @@ export default function WallConfigurator({
 
     const wallZones: Record<GalleryEnvironment, WallZone> = {
         home: {
-            top: '8%',      // Moved up 10% from 18%
-            left: '20.25%', // Recentered for 59.5% width
-            width: '59.5%', // Scaled down 15% from 70%
-            height: '38.25%', // Scaled down 15% from 45%
+            // Calibrated: 10% larger and moved up 8%
+            top: '19%',      // 27% - 8%
+            left: '35.25%',  // Centered for 29.5% width
+            width: '29.5%',  // 26.8% * 1.1
+            height: '19.6%', // 17.8% * 1.1
             overrides: {
                 'single-landscape': {
-                    top: '13.5%',
-                    left: '36.5%',
-                    width: '31%',
-                    height: '22%'
+                    top: '22%',  // 30% - 8%
+                    left: '40.25%',// Centered
+                    width: '19.5%',// 17.7% * 1.1
+                    height: '17.2%'// 15.6% * 1.1
                 },
                 'single-portrait': {
-                    top: '9%',
-                    left: '41.2%',
-                    width: '17.6%',
-                    height: '38.5%'
+                    top: '19%',  // 27% - 8%
+                    left: '46.1%', // Centered
+                    width: '7.8%', // 7.1% * 1.1
+                    height: '19.7%'// 17.9% * 1.1
                 }
             }
         },
         office: {
-            top: '20%',
-            left: '20%',
-            width: '60%',
-            height: '50%',
+            // Calibrated: Scaled down 5%, Lowered 5%
+            top: '25%',      // 20% + 5%
+            left: '16.25%',  // Centered for 47.5% width
+            width: '47.5%',  // 50% * 0.95
+            height: '42.75%',// 45% * 0.95
             overrides: {
                 'single-portrait': {
-                    top: '26%',     // Slightly more down
-                    left: '45%',    // Significantly more right
-                    width: '22%',
-                    height: '50%'
+                    top: '27%',  // 22% + 5%
+                    left: '28.6%',// Centered for 22.8% width
+                    width: '22.8%',// 24% * 0.95
+                    height: '42.75%'// 45% * 0.95
                 }
             }
         },
         business: {
-            top: '15%',
-            left: '28%',
-            width: '42.5%',
-            height: '38.25%',
+            // Calibrated: Scaled down additional 15%
+            top: '18%',
+            left: '30.9%',     // Centered for 38.2% width
+            width: '38.2%',    // 45% * 0.85
+            height: '30.6%',   // 36% * 0.85
             overrides: {
                 'single-landscape': {
-                    top: '14%',
-                    left: '33%',    // Moved further right from 28%
-                    width: '35%',
-                    height: '35%'
+                    top: '20%',
+                    left: '32%',    // Keeping existing single overrides for consistency
+                    width: '36%',
+                    height: '31.5%'
                 },
                 'single-portrait': {
-                    top: '15%',
-                    left: '42%',    // Moved further right from 35%
-                    width: '22%',
-                    height: '49.5%'
+                    top: '18%',
+                    left: '41%',
+                    width: '18%',
+                    height: '40.5%'
                 }
             }
         }
@@ -189,8 +323,8 @@ export default function WallConfigurator({
                 };
             case 'gallery-6':
                 return {
-                    container: 'grid grid-cols-3 gap-6 w-full h-full items-center content-center px-4',
-                    item: 'w-full aspect-[3/2] flex items-center justify-center'
+                    container: 'grid grid-cols-3 grid-rows-2 gap-6 w-full h-full items-center content-center px-4',
+                    item: 'w-full h-full flex items-center justify-center'
                 };
             case 'collage-5':
                 return {
@@ -242,7 +376,7 @@ export default function WallConfigurator({
                                     src={currentBg.id}
                                     alt={`Gallery Environment - ${environment}`}
                                     fill
-                                    className="object-cover opacity-90"
+                                    className="object-cover"
                                     priority
                                 />
                             ) : (
@@ -250,7 +384,7 @@ export default function WallConfigurator({
                                     src={currentBg.fallback}
                                     alt={`Gallery Environment - ${environment}`}
                                     fill
-                                    className="object-cover opacity-90"
+                                    className="object-cover"
                                     priority
                                 />
                             )}
@@ -261,7 +395,6 @@ export default function WallConfigurator({
                     <div className={cn(
                         "absolute inset-0 transition-colors duration-700",
                         environment === 'home' && "bg-[#5c4d3c]/20 mix-blend-overlay",
-                        environment === 'business' && "bg-black/40 mix-blend-multiply",
                         environment === 'office' && "bg-blue-900/10 mix-blend-overlay"
                     )} />
                 </div>
@@ -290,106 +423,23 @@ export default function WallConfigurator({
                             className={gridConfig.container}
                         >
                             {slots.map((photo, index) => {
-                                const isSingle = layout === 'single';
                                 const isBigSlot = layout === 'collage-5' && (index === 0 || index === 1);
                                 const colSpan = isBigSlot ? 'col-span-3' : layout === 'collage-5' ? 'col-span-2' : '';
 
-                                // For Single view: we want the image to define the aspect ratio
-                                // The container will flex-center it.
-                                // We won't use 'fill' for single view, instead standard responsive sizing.
-                                const gridCellStyle: React.CSSProperties = isSingle ? {
-                                    width: '100%',
-                                    height: '100%',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center'
-                                } : {
-                                    width: '100%',
-                                    height: '100%'
-                                };
-
                                 return (
-                                    <motion.div
+                                    <WallSlot
                                         key={`slot-${index}`}
-                                        layoutId={isSingle ? undefined : `slot-${index}`}
-                                        onClick={() => onSlotClick(index)}
-                                        className={cn(
-                                            "relative group cursor-pointer transition-all duration-300 flex items-center justify-center",
-                                            gridConfig.item,
-                                            colSpan
-                                        )}
-                                        style={gridCellStyle}
-                                    >
-                                        <div
-                                            className={cn(
-                                                "relative transition-all duration-500",
-                                                activeSlotIndex === index && !photo ? "ring-2 ring-white/50 ring-offset-4 ring-offset-transparent" : "",
-                                                activeSlotIndex === index && photo ? "scale-[1.02] z-20" : "hover:scale-[1.02] hover:z-10",
-                                                !photo && "bg-white/5 backdrop-blur-[2px] border border-white/10 rounded-sm hover:bg-white/10 transition-all duration-500 w-full aspect-square"
-                                            )}
-                                            style={(!isSingle) ? {
-                                                width: '100%',
-                                                height: '100%',
-                                                // Used for grid aspect ratio, single will use image's own
-                                            } : {
-                                                // For single, constraints come from parent flex item max-w/h
-                                                maxWidth: '100%',
-                                                maxHeight: '100%',
-                                                width: 'auto',
-                                                height: 'auto'
-                                            }}
-                                        >
-                                            {photo ? (
-                                                <div className="w-full h-full relative" style={getFrameStyles(frameStyle)}>
-                                                    <div className={cn("w-full h-full relative overflow-hidden bg-neutral-50", matClasses)}>
-                                                        <div className="relative w-full h-full shadow-[inset_1px_1px_15px_rgba(0,0,0,0.15)]">
-                                                            {(photo.cloudinaryId && cloudinaryCloudName) ? (
-                                                                <CldImage
-                                                                    src={photo.cloudinaryId}
-                                                                    alt={photo.alt}
-                                                                    // Dual mode:
-                                                                    // Single: explicit width/height to drive 'auto' container size
-                                                                    // Grid: 'fill' to conform to grid cell
-                                                                    fill={!isSingle}
-                                                                    width={isSingle ? photo.width : undefined}
-                                                                    height={isSingle ? photo.height : undefined}
-                                                                    className={cn(
-                                                                        "object-cover",
-                                                                        isSingle && "max-w-full max-h-full w-auto h-auto"
-                                                                    )}
-                                                                    sizes={isSingle ? "80vw" : "(max-width: 768px) 100vw, 33vw"}
-                                                                />
-                                                            ) : (
-                                                                <Image
-                                                                    src={photo.src}
-                                                                    alt={photo.alt}
-                                                                    fill={!isSingle}
-                                                                    width={isSingle ? photo.width : undefined}
-                                                                    height={isSingle ? photo.height : undefined}
-                                                                    className={cn(
-                                                                        "object-cover",
-                                                                        isSingle && "max-w-full max-h-full w-auto h-auto"
-                                                                    )}
-                                                                    sizes={isSingle ? "80vw" : "(max-width: 768px) 100vw, 33vw"}
-                                                                />
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                    <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/10 to-white/20 pointer-events-none mix-blend-soft-light opacity-60" />
-                                                    <button
-                                                        onClick={(e) => { e.stopPropagation(); onClearSlot(index); }}
-                                                        className="absolute -top-3 -right-3 bg-neutral-900/80 backdrop-blur-md text-white p-1.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 z-50 hover:bg-red-500"
-                                                    >
-                                                        <X size={14} />
-                                                    </button>
-                                                </div>
-                                            ) : (
-                                                <div className="w-full h-full flex flex-col items-center justify-center text-white/20 gap-3">
-                                                    <Plus size={isSingle ? 32 : 18} />
-                                                </div>
-                                            )}
-                                        </div>
-                                    </motion.div>
+                                        index={index}
+                                        photo={photo}
+                                        activeSlotIndex={activeSlotIndex}
+                                        onSlotClick={onSlotClick}
+                                        onClearSlot={onClearSlot}
+                                        gridConfig={gridConfig}
+                                        layout={layout}
+                                        frameStyle={frameStyle}
+                                        matClasses={matClasses}
+                                        colSpan={colSpan}
+                                    />
                                 );
                             })}
                         </motion.div>
