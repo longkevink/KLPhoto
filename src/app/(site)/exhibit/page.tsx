@@ -1,5 +1,4 @@
-import { getPhotosByCategory, getPhotoById } from '@/lib/photos';
-import { PhotoCategory } from '@/content/types';
+import { getExhibitPhotoCardsByCategory, getPhotoDetailById } from '@/lib/photos';
 import { Metadata } from 'next';
 import ExhibitClient from '@/components/exhibit/ExhibitClient';
 
@@ -27,13 +26,9 @@ interface ExhibitPageProps {
 export default async function ExhibitPage({ searchParams }: ExhibitPageProps) {
     const params = await searchParams;
     const spotlightPhotoId = params.photo;
-    const spotlightPhoto = spotlightPhotoId ? getPhotoById(spotlightPhotoId) : null;
+    const spotlightPhoto = spotlightPhotoId ? getPhotoDetailById(spotlightPhotoId) : null;
 
-    // Get data server-side
-    const categories: PhotoCategory[] = ['travel', 'moments', 'street'];
-    const photosByCategory = Object.fromEntries(
-        categories.map((cat) => [cat, getPhotosByCategory(cat)])
-    ) as Record<PhotoCategory, ReturnType<typeof getPhotosByCategory>>;
+    const photosByCategory = getExhibitPhotoCardsByCategory();
 
     return (
         <ExhibitClient

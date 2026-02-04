@@ -1,4 +1,4 @@
-import { getHomeGalleryPhotos, getHeroPhoto } from '@/lib/photos';
+import { getHomeGalleryPhotoCards, getHeroPhoto } from '@/lib/photos';
 import Hero from '@/components/home/Hero';
 import MasonryGallery from '@/components/home/MasonryGallery';
 import { CustomLink } from '@/components/ui/Button';
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default function HomePage() {
-    const featuredPhotos = getHomeGalleryPhotos(18);
+    const featuredPhotos = getHomeGalleryPhotoCards(18);
     const heroPhoto = getHeroPhoto();
 
     return (

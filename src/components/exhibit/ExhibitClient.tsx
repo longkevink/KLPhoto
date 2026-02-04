@@ -1,26 +1,29 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
-import { Photo, PhotoCategory } from '@/content/types';
+import { PhotoCard, PhotoCategory, PhotoDetail } from '@/content/types';
 import FilmStrip from './FilmStrip';
-import SpotlightModal from './SpotlightModal';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAdaptiveMotion } from '@/lib/useAdaptiveMotion';
 
+const SpotlightModal = dynamic(() => import('./SpotlightModal'), { ssr: false });
 
 interface ExhibitClientProps {
-    photosByCategory: Record<PhotoCategory, Photo[]>;
-    initialSpotlightPhoto: Photo | null;
+    photosByCategory: Record<PhotoCategory, PhotoCard[]>;
+    initialSpotlightPhoto: PhotoDetail | null;
 }
 
 export default function ExhibitClient({ photosByCategory, initialSpotlightPhoto }: ExhibitClientProps) {
     const searchParams = useSearchParams();
+    const shouldReduceMotion = useAdaptiveMotion();
 
     const categories: PhotoCategory[] = ['travel', 'moments', 'street'];
 
     const [activeCategory, setActiveCategory] = useState<PhotoCategory>('travel');
-    const [spotlightPhoto, setSpotlightPhoto] = useState<Photo | null>(initialSpotlightPhoto);
+    const [spotlightPhoto, setSpotlightPhoto] = useState<PhotoCard | PhotoDetail | null>(initialSpotlightPhoto);
     const [isModalOpen, setIsModalOpen] = useState(!!initialSpotlightPhoto);
 
     // Sync state with URL params if they change externally (e.g. back button)
@@ -39,7 +42,7 @@ export default function ExhibitClient({ photosByCategory, initialSpotlightPhoto 
     }, [searchParams, isModalOpen]);
 
 
-    const handlePhotoClick = (photo: Photo) => {
+    const handlePhotoClick = (photo: PhotoCard) => {
         setSpotlightPhoto(photo);
         setIsModalOpen(true);
         // Push state without reloading
@@ -104,7 +107,7 @@ export default function ExhibitClient({ photosByCategory, initialSpotlightPhoto 
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -20 }}
-                        transition={{ duration: 0.5, ease: "easeOut" }}
+                        transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.5, ease: "easeOut" }}
                     >
                         <FilmStrip
                             photos={photosByCategory[activeCategory]}

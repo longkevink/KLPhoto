@@ -5,14 +5,15 @@ import Image from 'next/image';
 import CldImage from '@/components/ui/CldImage';
 import { motion } from 'framer-motion';
 
-import { Photo } from '@/content/types';
+import { PhotoCard } from '@/content/types';
 import { cn } from '@/lib/utils';
 import { fadeIn } from '@/lib/motion';
 import { cloudinaryCloudName } from '@/lib/cloudinary';
+import { useAdaptiveMotion } from '@/lib/useAdaptiveMotion';
 
 interface FilmStripProps {
-    photos: Photo[];
-    onPhotoClick: (photo: Photo) => void;
+    photos: PhotoCard[];
+    onPhotoClick: (photo: PhotoCard) => void;
     className?: string;
     isActive: boolean;
 }
@@ -21,11 +22,13 @@ interface FilmStripProps {
 function HorizontalStrip({
     photos,
     onPhotoClick,
-    rowIndex
+    rowIndex,
+    disableMotion,
 }: {
-    photos: Photo[];
-    onPhotoClick: (photo: Photo) => void;
+    photos: PhotoCard[];
+    onPhotoClick: (photo: PhotoCard) => void;
     rowIndex: number;
+    disableMotion: boolean;
 }) {
     const containerRef = useRef<HTMLDivElement>(null);
     const [isDragging, setIsDragging] = useState(false);
@@ -56,7 +59,7 @@ function HorizontalStrip({
     };
 
     // Prepare click handler - prevent click if we were dragging
-    const handlePhotoClick = (e: React.MouseEvent, photo: Photo) => {
+    const handlePhotoClick = (e: React.MouseEvent, photo: PhotoCard) => {
         if (isDragging) {
             e.stopPropagation();
             return;
@@ -84,7 +87,7 @@ function HorizontalStrip({
                     className="flex-shrink-0 snap-center" // Snap alignment
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: (rowIndex * photos.length + index) * 0.02 }}
+                    transition={disableMotion ? { duration: 0 } : { delay: (rowIndex * photos.length + index) * 0.02 }}
                     style={{
                         height: '45vh',
                     }}
@@ -111,6 +114,7 @@ function HorizontalStrip({
                                     className="w-full h-full object-contain pointer-events-none"
                                     sizes="(max-width: 768px) 90vw, 50vw"
                                     priority={rowIndex === 0 && index < 3}
+                                    loading={rowIndex === 0 && index < 3 ? 'eager' : 'lazy'}
                                 />
                             ) : (
                                 <Image
@@ -121,6 +125,7 @@ function HorizontalStrip({
                                     className="w-full h-full object-contain pointer-events-none"
                                     sizes="(max-width: 768px) 90vw, 50vw"
                                     priority={rowIndex === 0 && index < 3}
+                                    loading={rowIndex === 0 && index < 3 ? 'eager' : 'lazy'}
                                 />
                             )}
                             {/* Hover Overlay */}
@@ -139,13 +144,15 @@ function HorizontalStrip({
 }
 
 export default function FilmStrip({ photos, onPhotoClick, className, isActive }: FilmStripProps) {
+    const shouldReduceMotion = useAdaptiveMotion();
+
     if (!isActive) return null;
 
     // Split photos into rows (3-4 rows based on photo count)
     const rowCount = photos.length > 20 ? 4 : 3;
     const photosPerRow = Math.ceil(photos.length / rowCount);
 
-    const rows: Photo[][] = [];
+    const rows: PhotoCard[][] = [];
     for (let i = 0; i < rowCount; i++) {
         const start = i * photosPerRow;
         const end = start + photosPerRow;
@@ -169,6 +176,7 @@ export default function FilmStrip({ photos, onPhotoClick, className, isActive }:
                         photos={rowPhotos}
                         onPhotoClick={onPhotoClick}
                         rowIndex={rowIndex}
+                        disableMotion={shouldReduceMotion}
                     />
                 ))}
             </div>

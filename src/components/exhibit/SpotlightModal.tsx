@@ -5,13 +5,15 @@ import Image from 'next/image';
 import CldImage from '@/components/ui/CldImage';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
-import { Photo } from '@/content/types';
+import { PhotoCard, PhotoDetail } from '@/content/types';
 import { isAdminMode } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
 import { cloudinaryCloudName } from '@/lib/cloudinary';
+import { DEFAULT_ETSY_URL } from '@/config/purchase';
+import { useAdaptiveMotion } from '@/lib/useAdaptiveMotion';
 
 interface SpotlightModalProps {
-    photo: Photo | null;
+    photo: PhotoCard | PhotoDetail | null;
     isOpen: boolean;
     onClose: () => void;
 }
@@ -19,6 +21,7 @@ interface SpotlightModalProps {
 export default function SpotlightModal({ photo, isOpen, onClose }: SpotlightModalProps) {
     const modalRef = useRef<HTMLDivElement>(null);
     const showAdminFeatures = isAdminMode();
+    const shouldReduceMotion = useAdaptiveMotion();
 
     // Handle ESC key to close
     useEffect(() => {
@@ -47,8 +50,8 @@ export default function SpotlightModal({ photo, isOpen, onClose }: SpotlightModa
 
     const backdropVariants = {
         hidden: { opacity: 0 },
-        visible: { opacity: 1, transition: { duration: 0.4 } },
-        exit: { opacity: 0, transition: { duration: 0.3 } }
+        visible: { opacity: 1, transition: shouldReduceMotion ? { duration: 0 } : { duration: 0.4 } },
+        exit: { opacity: 0, transition: shouldReduceMotion ? { duration: 0 } : { duration: 0.3 } }
     };
 
     const plateVariants = {
@@ -59,13 +62,13 @@ export default function SpotlightModal({ photo, isOpen, onClose }: SpotlightModa
         },
         visible: {
             clipPath: "inset(0% 0% 0% 0%)",
-            transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }
+            transition: shouldReduceMotion ? { duration: 0 } : { duration: 0.6, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }
         },
         exit: {
             clipPath: isLandscape
                 ? "inset(50% 0 50% 0)"
                 : "inset(0 50% 0 50%)",
-            transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }
+            transition: shouldReduceMotion ? { duration: 0 } : { duration: 0.4, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }
         }
     };
 
@@ -74,7 +77,7 @@ export default function SpotlightModal({ photo, isOpen, onClose }: SpotlightModa
         visible: {
             opacity: 1,
             scale: 1,
-            transition: { delay: 0.2, duration: 0.5 }
+            transition: shouldReduceMotion ? { duration: 0 } : { delay: 0.2, duration: 0.5 }
         }
     };
 
@@ -133,7 +136,7 @@ export default function SpotlightModal({ photo, isOpen, onClose }: SpotlightModa
                                     height={photo.height}
                                     className="w-auto h-auto max-w-[96vw] max-h-[90vh] object-contain"
                                     sizes="96vw"
-                                    priority
+                                    loading="eager"
                                 />
                             ) : (
                                 <Image
@@ -143,7 +146,7 @@ export default function SpotlightModal({ photo, isOpen, onClose }: SpotlightModa
                                     height={photo.height}
                                     className="w-auto h-auto max-w-[96vw] max-h-[90vh] object-contain"
                                     sizes="96vw"
-                                    priority
+                                    loading="eager"
                                 />
                             )}
                         </motion.div>
@@ -152,7 +155,7 @@ export default function SpotlightModal({ photo, isOpen, onClose }: SpotlightModa
                         <motion.div
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.5 }}
+                            transition={shouldReduceMotion ? { duration: 0 } : { delay: 0.5 }}
                             className="mt-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-[#1A1A1A]"
                         >
                             <div>
@@ -164,7 +167,7 @@ export default function SpotlightModal({ photo, isOpen, onClose }: SpotlightModa
 
                             {showAdminFeatures && (
                                 <Button
-                                    onClick={() => window.open(photo.etsyUrl, '_blank')}
+                                    onClick={() => window.open(('etsyUrl' in photo ? photo.etsyUrl : undefined) ?? DEFAULT_ETSY_URL, '_blank')}
                                     className="bg-[#F1641E] hover:bg-[#D45719] text-white border-transparent"
                                 >
                                     Buy print on Etsy

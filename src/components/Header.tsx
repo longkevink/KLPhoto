@@ -1,29 +1,36 @@
 'use client';
 
-import { useState } from 'react';
-
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { motion, useScroll, useMotionValueEvent, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 export default function Header() {
     const [isScrolled, setIsScrolled] = useState(false);
-    const { scrollY } = useScroll();
     const pathname = usePathname();
 
-    // Dynamic thresholds
     const isHomePage = pathname === '/';
     const isGalleryPage = pathname === '/gallery';
     const scrollThreshold = isHomePage ? 200 : 20;
 
-    // Update header state based on scroll position
-    useMotionValueEvent(scrollY, 'change', (latest) => {
-        const scrolled = latest > scrollThreshold;
-        if (scrolled !== isScrolled) {
-            setIsScrolled(scrolled);
-        }
-    });
+    useEffect(() => {
+        let frame = 0;
+
+        const handleScroll = () => {
+            cancelAnimationFrame(frame);
+            frame = window.requestAnimationFrame(() => {
+                setIsScrolled(window.scrollY > scrollThreshold);
+            });
+        };
+
+        handleScroll();
+        window.addEventListener('scroll', handleScroll, { passive: true });
+
+        return () => {
+            cancelAnimationFrame(frame);
+            window.removeEventListener('scroll', handleScroll);
+        };
+    }, [scrollThreshold]);
 
     const isScrolledOrGallery = isScrolled || isGalleryPage;
     const showLogo = isScrolledOrGallery || !isHomePage;
@@ -36,40 +43,31 @@ export default function Header() {
     ];
 
     return (
-        <motion.header
+        <header
             className={cn(
                 'fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out',
                 isScrolledOrGallery
                     ? 'bg-background/80 backdrop-blur-xl border-b border-border/50 py-3 shadow-sm'
                     : 'bg-transparent py-6'
             )}
-            initial={{ y: -100 }}
-            animate={{ y: 0 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         >
             <div className="container mx-auto px-6 flex items-center justify-between">
-                {/* Logo / Home Link - Only visible when scrolled */}
                 <div className="w-48 h-8 flex items-center">
-                    <AnimatePresence>
-                        {showLogo && (
-                            <motion.div
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: -10 }}
-                                transition={{ duration: 0.4, ease: 'easeOut' }}
-                            >
-                                <Link
-                                    href="/"
-                                    className="font-serif text-xl tracking-[0.25em] uppercase z-50 text-foreground hover:opacity-70 transition-opacity whitespace-nowrap"
-                                >
-                                    Kevin Long
-                                </Link>
-                            </motion.div>
+                    <div
+                        className={cn(
+                            'transition-all duration-300',
+                            showLogo ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2 pointer-events-none'
                         )}
-                    </AnimatePresence>
+                    >
+                        <Link
+                            href="/"
+                            className="font-serif text-xl tracking-[0.25em] uppercase z-50 text-foreground hover:opacity-70 transition-opacity whitespace-nowrap"
+                        >
+                            Kevin Long
+                        </Link>
+                    </div>
                 </div>
 
-                {/* Desktop Navigation */}
                 <nav className="hidden md:flex items-center gap-10">
                     {links.map((link) => {
                         const isActive = pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href));
@@ -84,27 +82,25 @@ export default function Header() {
                                 )}
                             >
                                 {link.label}
-                                {isActive && (
-                                    <motion.div
-                                        layoutId="activeNav"
-                                        className="absolute -bottom-1 left-0 right-0 h-[1.5px] bg-foreground"
-                                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                                    />
-                                )}
+                                <span
+                                    className={cn(
+                                        'absolute -bottom-1 left-0 right-0 h-[1.5px] bg-foreground transition-transform duration-300 origin-left',
+                                        isActive ? 'scale-x-100' : 'scale-x-0'
+                                    )}
+                                />
                             </Link>
                         );
                     })}
                 </nav>
 
-                {/* Mobile Nav Placeholder */}
                 <div className="md:hidden">
-                    <button className="text-foreground p-2">
+                    <button className="text-foreground p-2" aria-label="Open navigation menu">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                             <path d="M4 8h16M4 16h16" />
                         </svg>
                     </button>
                 </div>
             </div>
-        </motion.header>
+        </header>
     );
 }

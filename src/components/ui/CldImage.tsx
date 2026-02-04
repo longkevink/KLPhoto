@@ -1,7 +1,7 @@
 'use client';
 
-import Image, { ImageProps } from 'next/image';
-import { getCloudinaryUrl } from '@/lib/cloudinary';
+import Image, { ImageLoaderProps, ImageProps } from 'next/image';
+import { cloudinaryCloudName, getCloudinaryFallbackUrl, getCloudinaryUrl } from '@/lib/cloudinary';
 
 /**
  * A resilient drop-in replacement for next-cloudinary's CldImage.
@@ -23,17 +23,27 @@ export default function CldImage({
     unoptimized,
     ...props
 }: CldImageProps) {
-    // Serve original asset URL for maximum source resolution.
-    const cloudinaryUrl = getCloudinaryUrl(src);
+    const hasCloudinary = Boolean(cloudinaryCloudName);
+    const encodedPublicId = encodeURIComponent(src).replace(/%2F/g, '/');
+
+    const cloudinaryLoader = ({ src: requestedSrc, width: requestedWidth, quality }: ImageLoaderProps) =>
+        getCloudinaryUrl(decodeURIComponent(requestedSrc.replace(/^\//, '')), {
+            width: requestedWidth,
+            quality: quality ?? 'auto',
+            format: 'auto',
+            crop: 'limit',
+            maxDimension: 2400,
+        });
 
     return (
         <Image
-            src={cloudinaryUrl}
+            src={hasCloudinary ? `/${encodedPublicId}` : getCloudinaryFallbackUrl(Number(width) || 800, Number(height) || 600)}
+            loader={hasCloudinary ? cloudinaryLoader : undefined}
             width={width}
             height={height}
             alt={alt}
             className={className}
-            unoptimized={unoptimized ?? true}
+            unoptimized={hasCloudinary ? unoptimized : true}
             {...props}
         />
     );

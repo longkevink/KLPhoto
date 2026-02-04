@@ -2,17 +2,19 @@
 
 import Image from 'next/image';
 import CldImage from '@/components/ui/CldImage';
-import { Photo } from '@/content/types';
+import { PhotoCard } from '@/content/types';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { fadeInUp, fadeIn } from '@/lib/motion';
 import { cloudinaryCloudName } from '@/lib/cloudinary';
+import { useAdaptiveMotion } from '@/lib/useAdaptiveMotion';
 
 interface HeroProps {
-    photo?: Photo;
+    photo?: PhotoCard;
 }
 
 export default function Hero({ photo }: HeroProps) {
     const { scrollY } = useScroll();
+    const shouldReduceMotion = useAdaptiveMotion();
 
     // Parallax effect for the text layer
     const y = useTransform(scrollY, [0, 500], [0, 150]);
@@ -31,7 +33,7 @@ export default function Hero({ photo }: HeroProps) {
                             className="relative w-full h-full"
                             initial={{ scale: 1.1, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
-                            transition={{ duration: 1.5, ease: "easeOut" }}
+                            transition={shouldReduceMotion ? { duration: 0 } : { duration: 1.5, ease: "easeOut" }}
                         >
                             {photo.cloudinaryId && cloudinaryCloudName ? (
                                 <CldImage
@@ -61,7 +63,7 @@ export default function Hero({ photo }: HeroProps) {
                         className="absolute inset-0 bg-background"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        transition={{ duration: 1.5 }}
+                        transition={shouldReduceMotion ? { duration: 0 } : { duration: 1.5 }}
                     />
                 )}
             </div>
@@ -94,7 +96,7 @@ export default function Hero({ photo }: HeroProps) {
                 className="absolute bottom-12 left-1/2 -translate-x-1/2 text-border transform"
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1, duration: 1, repeat: Infinity, repeatType: 'reverse' }}
+                transition={shouldReduceMotion ? { duration: 0 } : { delay: 1, duration: 1, repeat: Infinity, repeatType: 'reverse' }}
             >
                 <span className="sr-only">Scroll down</span>
                 <svg

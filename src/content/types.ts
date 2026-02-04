@@ -44,12 +44,30 @@ export interface Photo {
     /** Featured photos appear on Home and Selected Works */
     featured: boolean;
 
-    /** Direct link to Etsy listing for this print */
-    etsyUrl: string;
+    /** Optional direct link to Etsy listing for this print */
+    etsyUrl?: string;
 
     /** Optional Cloudinary public ID for cloud-hosted images */
     cloudinaryId?: string;
 }
+
+export type PhotoCard = Pick<
+    Photo,
+    | 'id'
+    | 'src'
+    | 'alt'
+    | 'title'
+    | 'category'
+    | 'series'
+    | 'orientation'
+    | 'width'
+    | 'height'
+    | 'cloudinaryId'
+>;
+
+export type PhotoDetail = PhotoCard & {
+    etsyUrl: string;
+};
 
 /**
  * Frame style options for Gallery wall visualization

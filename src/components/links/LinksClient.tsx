@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { ArrowRight, ShoppingBag, Instagram } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -35,15 +34,13 @@ export default function LinksPage() {
 
             <div className="space-y-6">
                 {links.map((link, index) => (
-                    <motion.a
+                    <a
                         key={link.id}
                         href={link.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="group flex items-center justify-between p-6 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 }}
+                        className="group flex items-center justify-between p-6 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 animate-fade-up"
+                        style={{ animationDelay: `${index * 80}ms` }}
                     >
                         <div className="flex items-center gap-6">
                             <div className={cn("p-4 rounded-full shadow-inner", link.color)}>
@@ -58,7 +55,7 @@ export default function LinksPage() {
                         <div className="text-gray-300 group-hover:text-black transition-colors">
                             <ArrowRight size={24} />
                         </div>
-                    </motion.a>
+                    </a>
                 ))}
             </div>
         </main>

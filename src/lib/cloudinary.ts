@@ -1,62 +1,43 @@
-/**
- * Cloudinary utility functions for server-side operations.
- * Configuration is automatically read from CLOUDINARY_URL env var.
- *
- * For client-side image display, use <CldImage /> from 'next-cloudinary'.
- */
+type CloudinaryFormat = 'auto' | 'webp' | 'avif' | 'jpg' | 'png';
+type CloudinaryCrop = 'limit' | 'fill';
 
-/**
- * Helper to build a Cloudinary URL for a given public ID.
- * Useful when you need a raw URL instead of the CldImage component.
- */
-export function getCloudinaryUrl(publicId: string, options?: {
+interface CloudinaryUrlOptions {
     width?: number;
     height?: number;
     maxDimension?: number;
     quality?: 'auto' | number;
-    format?: 'auto' | 'webp' | 'avif' | 'jpg' | 'png';
-}): string {
-    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-    if (!cloudName) {
-        // Log warning but don't throw during build to prevent crash
-        console.warn('NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME is not configured. Falling back to placeholder.');
-        return `https://via.placeholder.com/${options?.width || 800}x${options?.height || 600}?text=Cloudinary+Config+Missing`;
+    format?: CloudinaryFormat;
+    crop?: CloudinaryCrop;
+}
+
+export const cloudinaryCloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+
+export function getCloudinaryFallbackUrl(width = 800, height = 600): string {
+    return `https://via.placeholder.com/${width}x${height}?text=Cloudinary+Config+Missing`;
+}
+
+export function getCloudinaryUrl(publicId: string, options: CloudinaryUrlOptions = {}): string {
+    if (!cloudinaryCloudName) {
+        return getCloudinaryFallbackUrl(options.width, options.height);
     }
 
     const transformations: string[] = [];
 
-    // By default, do not cap source dimensions. This preserves originals.
-    // Callers can still opt into an explicit cap via options.maxDimension.
-    const MAX_DIMENSION = options?.maxDimension;
+    const maxDimension = options.maxDimension;
+    let width = options.width;
+    let height = options.height;
 
-    let w = options?.width;
-    let h = options?.height;
-
-    if (MAX_DIMENSION) {
-        if (w && w > MAX_DIMENSION) w = MAX_DIMENSION;
-        if (h && h > MAX_DIMENSION) h = MAX_DIMENSION;
+    if (maxDimension) {
+        if (width && width > maxDimension) width = maxDimension;
+        if (height && height > maxDimension) height = maxDimension;
     }
 
-    if (w) transformations.push(`w_${w}`);
-    if (h) transformations.push(`h_${h}`);
+    if (width) transformations.push(`w_${Math.round(width)}`);
+    if (height) transformations.push(`h_${Math.round(height)}`);
+    if (width || height) transformations.push(`c_${options.crop ?? 'limit'}`);
 
-    // If we applied any dimension constraints, use 'limit' crop to preserve aspect ratio
-    if (w || h) {
-        transformations.push('c_limit');
-    }
+    transformations.push(`q_${options.quality ?? 'auto'}`);
+    transformations.push(`f_${options.format ?? 'auto'}`);
 
-    if (options?.quality) transformations.push(`q_${options.quality}`);
-    if (options?.format) transformations.push(`f_${options.format}`);
-
-    const transformString = transformations.length > 0
-        ? `${transformations.join(',')}/`
-        : '';
-
-    return `https://res.cloudinary.com/${cloudName}/image/upload/${transformString}${publicId}`;
+    return `https://res.cloudinary.com/${cloudinaryCloudName}/image/upload/${transformations.join(',')}/${publicId}`;
 }
-
-/**
- * Cloudinary cloud name for use in components.
- * This is safe to use in client components.
- */
-export const cloudinaryCloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;

@@ -1,19 +1,88 @@
 'use client';
 
+import { memo } from 'react';
 import Image from 'next/image';
 import CldImage from '@/components/ui/CldImage';
-import { Photo, PhotoCategory } from '@/content/types';
+import { PhotoCard, PhotoCategory } from '@/content/types';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { cloudinaryCloudName } from '@/lib/cloudinary';
+import { useDraggable } from '@dnd-kit/core';
+import { useAdaptiveMotion } from '@/lib/useAdaptiveMotion';
 
-interface PhotoPickerProps {
-    photosGrouped: Record<PhotoCategory, Photo[]>;
-    onPhotoSelect: (photo: Photo) => void;
+interface DraggablePhotoProps {
+    photo: PhotoCard;
+    onSelect: (photo: PhotoCard) => void;
+    disableMotion?: boolean;
 }
 
-export default function PhotoPicker({ photosGrouped, onPhotoSelect }: PhotoPickerProps) {
+const DraggablePhoto = memo(function DraggablePhoto({ photo, onSelect, disableMotion }: DraggablePhotoProps) {
+    const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+        id: photo.id,
+        data: photo,
+    });
+
+    return (
+        <motion.button
+            ref={setNodeRef}
+            {...listeners}
+            {...attributes}
+            key={photo.id}
+            onClick={() => onSelect(photo)}
+            whileHover={disableMotion ? undefined : { scale: 1.03, y: -2 }}
+            whileTap={disableMotion ? undefined : { scale: 0.98 }}
+            className={cn(
+                "break-inside-avoid mb-3 group relative w-full bg-neutral-100 rounded-lg overflow-hidden focus-visible:ring-2 focus-visible:ring-black outline-none shadow-sm transition-all flex items-center justify-center touch-none",
+                photo.orientation === 'landscape' ? "aspect-[3/2]" : "aspect-[2/3]",
+                !disableMotion && "hover:shadow-md",
+                isDragging && "opacity-50 grayscale"
+            )}
+        >
+            {photo.cloudinaryId && cloudinaryCloudName ? (
+                <CldImage
+                    src={photo.cloudinaryId}
+                    alt={photo.alt}
+                    width={300}
+                    height={300}
+                    className={cn("w-full h-full object-cover", !disableMotion && "transition-transform duration-500 group-hover:scale-110")}
+                    sizes="(max-width: 640px) 40vw, 220px"
+                    loading="lazy"
+                />
+            ) : (
+                <Image
+                    src={photo.src}
+                    alt={photo.alt}
+                    width={300}
+                    height={300}
+                    className={cn("w-full h-full object-cover", !disableMotion && "transition-transform duration-500 group-hover:scale-110")}
+                    sizes="(max-width: 640px) 40vw, 220px"
+                    loading="lazy"
+                />
+            )}
+            <div className={cn("absolute inset-0 bg-black/0", !disableMotion && "group-hover:bg-black/10 transition-colors duration-300")} />
+
+            {/* Plus Icon Overlay */}
+            <div className={cn("absolute inset-0 flex items-center justify-center opacity-0", !disableMotion && "group-hover:opacity-100 transition-opacity duration-200")}>
+                <div className="bg-white/90 p-1.5 rounded-full shadow-sm text-black">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                </div>
+            </div>
+        </motion.button>
+    );
+});
+
+interface PhotoPickerProps {
+    photosGrouped: Record<PhotoCategory, PhotoCard[]>;
+    onPhotoSelect: (photo: PhotoCard) => void;
+    performanceMode?: boolean;
+}
+
+export default function PhotoPicker({ photosGrouped, onPhotoSelect, performanceMode = false }: PhotoPickerProps) {
     const categories: PhotoCategory[] = ['travel', 'street'];
+    const shouldReduceMotion = useAdaptiveMotion() || performanceMode;
 
     return (
         <aside className="w-80 h-full bg-white border-r border-neutral-100 overflow-y-auto flex flex-col z-10 scrollbar-thin scrollbar-thumb-neutral-200">
@@ -35,50 +104,15 @@ export default function PhotoPicker({ photosGrouped, onPhotoSelect }: PhotoPicke
                                 {photosGrouped[category]?.length || 0}
                             </span>
                         </div>
-                        
+
                         <div className="columns-2 gap-3 space-y-3">
                             {photosGrouped[category]?.map((photo) => (
-                                <motion.button
+                                <DraggablePhoto
                                     key={photo.id}
-                                    onClick={() => onPhotoSelect(photo)}
-                                    whileHover={{ scale: 1.03, y: -2 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    className={cn(
-                                        "break-inside-avoid mb-3 group relative w-full bg-neutral-100 rounded-lg overflow-hidden focus-visible:ring-2 focus-visible:ring-black outline-none shadow-sm hover:shadow-md transition-all flex items-center justify-center",
-                                        photo.orientation === 'landscape' ? "aspect-[3/2]" : "aspect-[2/3]"
-                                    )}
-                                >
-                                    {photo.cloudinaryId && cloudinaryCloudName ? (
-                                        <CldImage
-                                            src={photo.cloudinaryId}
-                                            alt={photo.alt}
-                                            width={300}
-                                            height={300}
-                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                            sizes="150px"
-                                        />
-                                    ) : (
-                                        <Image
-                                            src={photo.src}
-                                            alt={photo.alt}
-                                            width={300}
-                                            height={300}
-                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                            sizes="150px"
-                                        />
-                                    )}
-                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
-                                    
-                                    {/* Plus Icon Overlay */}
-                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                        <div className="bg-white/90 p-1.5 rounded-full shadow-sm text-black">
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                                            </svg>
-                                        </div>
-                                    </div>
-                                </motion.button>
+                                    photo={photo}
+                                    onSelect={onPhotoSelect}
+                                    disableMotion={shouldReduceMotion}
+                                />
                             ))}
                         </div>
                     </div>

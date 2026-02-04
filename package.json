@@ -3,10 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3666",
+    "dev": "next dev -H 127.0.0.1 -p 3666",
     "build": "next build",
-    "start": "next start -p 3666",
-    "lint": "eslint"
+    "start": "next start -H 127.0.0.1 -p 3666",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "perf:lint": "npm run lint && npm run typecheck"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

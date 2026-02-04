@@ -1,0 +1,2 @@
+export const DEFAULT_ETSY_URL =
+  'https://www.etsy.com/listing/1421980161/muir-woods-and-fern-creek-photo-redwood?ls=s&ga_order=most_relevant&ga_search_type=all&ga_view_type=gallery&ga_search_query=photo+prints&ref=sr_gallery-1-39&sr_prefetch=1&pf_from=search&pro=1&frs=1&sts=1&content_source=8c92eca6-47d3-4501-b00e-3412fa50f615%253ALT376b5942c26e3adec6a78eb5175edbcb614a11f3&organic_search_click=1&logging_key=8c92eca6-47d3-4501-b00e-3412fa50f615%3ALT376b5942c26e3adec6a78eb5175edbcb614a11f3&variation0=3273691037';

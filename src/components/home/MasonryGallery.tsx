@@ -1,25 +1,27 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import CldImage from '@/components/ui/CldImage';
-import { Photo } from '@/content/types';
+import { PhotoCard } from '@/content/types';
 import { cn } from '@/lib/utils';
 import { cloudinaryCloudName } from '@/lib/cloudinary';
-import SpotlightModal from '@/components/exhibit/SpotlightModal';
+
+const SpotlightModal = dynamic(() => import('@/components/exhibit/SpotlightModal'), { ssr: false });
 
 interface MasonryGalleryProps {
-    photos: Photo[];
+    photos: PhotoCard[];
     className?: string;
 }
 
 export default function MasonryGallery({ photos, className }: MasonryGalleryProps) {
-    const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
+    const [selectedPhoto, setSelectedPhoto] = useState<PhotoCard | null>(null);
 
     return (
         <>
             <div className={cn('columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8', className)}>
-                {photos.map((photo) => (
+                {photos.map((photo, index) => (
                     <div key={photo.id} className="break-inside-avoid relative group overflow-hidden">
                         <button
                             type="button"
@@ -37,6 +39,8 @@ export default function MasonryGallery({ photos, className }: MasonryGalleryProp
                                         height={photo.height}
                                         className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.015]"
                                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                        priority={index < 2}
+                                        loading={index < 2 ? 'eager' : 'lazy'}
                                     />
                                 ) : (
                                     <Image
@@ -46,6 +50,8 @@ export default function MasonryGallery({ photos, className }: MasonryGalleryProp
                                         height={photo.height}
                                         className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.015]"
                                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                        priority={index < 2}
+                                        loading={index < 2 ? 'eager' : 'lazy'}
                                     />
                                 )}
                             </div>

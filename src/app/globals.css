@@ -5,6 +5,8 @@
   --foreground: #000000;
   --muted: #404040;
   --border: #EAEAEA;
+  --font-outfit: "Avenir Next", "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-instrument: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, serif;
 }
 
 @theme inline {
@@ -42,4 +44,19 @@ body {
 
 .font-serif {
   font-family: var(--font-serif), serif;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.45s ease-out both;
 }

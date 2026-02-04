@@ -1,4 +1,4 @@
-import { getPhotosGroupedByCategory } from '@/lib/photos';
+import { getGalleryPhotoCardsByCategory } from '@/lib/photos';
 import { Metadata } from 'next';
 import GalleryClient from '@/components/gallery/GalleryClient';
 
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 };
 
 export default function GalleryPage() {
-    const photosGrouped = getPhotosGroupedByCategory();
+    const photosGrouped = getGalleryPhotoCardsByCategory();
 
     return <GalleryClient photosGrouped={photosGrouped} />;
 }
