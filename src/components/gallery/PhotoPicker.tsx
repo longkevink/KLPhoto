@@ -15,25 +15,34 @@ interface DraggablePhotoProps {
     onSelect: (photo: PhotoCard) => void;
     disableMotion?: boolean;
     compact?: boolean;
+    enableDrag?: boolean;
 }
 
-const DraggablePhoto = memo(function DraggablePhoto({ photo, onSelect, disableMotion, compact = false }: DraggablePhotoProps) {
+const DraggablePhoto = memo(function DraggablePhoto({
+    photo,
+    onSelect,
+    disableMotion,
+    compact = false,
+    enableDrag = true,
+}: DraggablePhotoProps) {
     const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
         id: photo.id,
         data: photo,
+        disabled: !enableDrag,
     });
 
     return (
         <motion.button
             ref={setNodeRef}
-            {...listeners}
-            {...attributes}
+            {...(enableDrag ? listeners : {})}
+            {...(enableDrag ? attributes : {})}
             key={photo.id}
             onClick={() => onSelect(photo)}
             whileHover={disableMotion ? undefined : { scale: 1.03, y: -2 }}
             whileTap={disableMotion ? undefined : { scale: 0.98 }}
             className={cn(
-                'break-inside-avoid group relative w-full bg-neutral-100 rounded-lg overflow-hidden focus-visible:ring-2 focus-visible:ring-black outline-none shadow-sm transition-all flex items-center justify-center touch-none tap-target',
+                'break-inside-avoid group relative w-full bg-neutral-100 rounded-lg overflow-hidden focus-visible:ring-2 focus-visible:ring-black outline-none shadow-sm transition-all flex items-center justify-center tap-target',
+                enableDrag && 'touch-none',
                 compact ? 'mb-0' : 'mb-3',
                 photo.orientation === 'landscape' ? "aspect-[3/2]" : "aspect-[2/3]",
                 !disableMotion && "hover:shadow-md",
@@ -123,13 +132,14 @@ export default function PhotoPicker({
                         </div>
 
                         <div className={cn(compact ? 'grid grid-cols-3 gap-2' : 'columns-2 gap-3 space-y-3')}>
-                            {photosGrouped[category]?.map((photo) => (
+                            {photosGrouped[category]?.map((photo, index) => (
                                 <DraggablePhoto
-                                    key={photo.id}
+                                    key={`${category}-${photo.id}-${index}`}
                                     photo={photo}
                                     onSelect={onPhotoSelect}
                                     disableMotion={shouldReduceMotion}
                                     compact={compact}
+                                    enableDrag={!compact}
                                 />
                             ))}
                         </div>

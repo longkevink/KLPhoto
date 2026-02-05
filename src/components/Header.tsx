@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -16,8 +16,6 @@ export default function Header() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const pathname = usePathname();
-    const mobilePanelRef = useRef<HTMLDivElement>(null);
-    const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
 
     const isHomePage = pathname === '/';
     const isGalleryPage = pathname === '/gallery';
@@ -43,47 +41,24 @@ export default function Header() {
     }, [scrollThreshold]);
 
     useEffect(() => {
-        if (!isMobileMenuOpen) return;
+        if (!isMobileMenuOpen) {
+            document.body.style.overflow = '';
+            return;
+        }
 
-        const panel = mobilePanelRef.current;
-        const focusable = panel?.querySelectorAll<HTMLElement>(
-            'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
-        );
-
-        focusable?.[0]?.focus();
-
-        const handleKeyDown = (event: KeyboardEvent) => {
+        const handleEscape = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
                 setIsMobileMenuOpen(false);
-                return;
-            }
-
-            if (event.key !== 'Tab' || !focusable || focusable.length === 0) return;
-
-            const first = focusable[0];
-            const last = focusable[focusable.length - 1];
-
-            if (event.shiftKey && document.activeElement === first) {
-                event.preventDefault();
-                last.focus();
-            } else if (!event.shiftKey && document.activeElement === last) {
-                event.preventDefault();
-                first.focus();
             }
         };
 
         document.body.style.overflow = 'hidden';
-        window.addEventListener('keydown', handleKeyDown);
+        window.addEventListener('keydown', handleEscape);
 
         return () => {
             document.body.style.overflow = '';
-            window.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('keydown', handleEscape);
         };
-    }, [isMobileMenuOpen]);
-
-    useEffect(() => {
-        if (isMobileMenuOpen) return;
-        mobileMenuButtonRef.current?.focus();
     }, [isMobileMenuOpen]);
 
     const isScrolledOrGallery = isScrolled || isGalleryPage;
@@ -143,7 +118,6 @@ export default function Header() {
 
                 <div className="md:hidden">
                     <button
-                        ref={mobileMenuButtonRef}
                         className="text-foreground p-2 tap-target"
                         aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
                         aria-controls="mobile-nav-panel"
@@ -162,23 +136,22 @@ export default function Header() {
                     type="button"
                     aria-label="Close menu overlay"
                     className={cn(
-                        'absolute inset-0 bg-black/35 transition-opacity',
+                        'absolute top-[64px] left-0 right-0 bottom-0 bg-black/45 transition-opacity',
                         isMobileMenuOpen ? 'opacity-100' : 'opacity-0'
                     )}
                     onClick={() => setIsMobileMenuOpen(false)}
                 />
                 <div
                     id="mobile-nav-panel"
-                    ref={mobilePanelRef}
                     className={cn(
-                        'absolute right-0 top-0 h-full w-[85vw] max-w-[340px] bg-background border-l border-border shadow-2xl p-6 pt-24 transition-transform duration-300 ease-out',
+                        'absolute right-0 top-[64px] z-10 h-[calc(100svh-64px)] w-[85vw] max-w-[340px] bg-white border-l border-border shadow-2xl p-6 overflow-y-auto transition-transform duration-300 ease-out',
                         isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
                     )}
                     role="dialog"
                     aria-modal="true"
                     aria-label="Mobile navigation"
                 >
-                    <nav className="flex flex-col gap-1" aria-label="Mobile primary navigation">
+                    <nav className="flex flex-col gap-2" aria-label="Mobile primary navigation">
                         {HEADER_LINKS.map((link) => {
                             const isActive = pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href));
 
