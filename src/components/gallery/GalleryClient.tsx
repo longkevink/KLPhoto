@@ -400,7 +400,7 @@ export default function GalleryClient({ photosGrouped }: GalleryClientProps) {
             </section>
 
             <section className="sticky top-[64px] z-20 px-4 pb-4 bg-background border-b border-border">
-                <div className="h-[26svh] rounded-2xl overflow-hidden bg-neutral-900">
+                <div className="relative w-full aspect-[3/2] max-h-[60vh] rounded-2xl overflow-hidden bg-neutral-900">
                     <WallConfigurator
                         environment={environment}
                         layout={layout}
@@ -411,8 +411,8 @@ export default function GalleryClient({ photosGrouped }: GalleryClientProps) {
                         onSlotClick={setActiveSlotIndex}
                         onClearSlot={handleClearSlot}
                         transform={activeTransform}
-                        workspaceWidth={1100}
-                        workspaceHeight={650}
+                        workspaceWidth={Math.max(320, dimensions.width - 24)}
+                        workspaceHeight={Math.round(Math.max(320, dimensions.width - 24) * (2 / 3))}
                         isPerformanceMode
                     />
                 </div>
